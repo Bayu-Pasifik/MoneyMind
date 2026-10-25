@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -6,15 +6,31 @@ import { useTransactions } from '../store/TransactionsContext';
 import { DonutChart } from '../components/DonutChart';
 import { TrendBarChart } from '../components/TrendBarChart';
 import { EmptyState } from '../components/EmptyState';
+import { PeriodTabs } from '../components/PeriodTabs';
+import { SummaryCards } from '../components/SummaryCards';
+import { TopMerchants } from '../components/TopMerchants';
 import { getCategoryBreakdown, getLastNDaysExpenseTotals } from '../utils/analytics';
 import { CATEGORY_CHART_COLORS, CATEGORY_LABEL } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
+import { filterByPeriod, filterByPreviousPeriod, getTopMerchants, Period, summarizePeriod } from '../utils/period';
 
 export function AnalyticsScreen() {
   const { colors, spacing, radii, typography } = useTheme();
-  const { transactions, totalExpense } = useTransactions();
+  const { transactions } = useTransactions();
+  const [period, setPeriod] = useState<Period>('month');
 
-  const breakdown = useMemo(() => getCategoryBreakdown(transactions), [transactions]);
+  const periodTransactions = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
+  const previousPeriodTransactions = useMemo(
+    () => filterByPreviousPeriod(transactions, period),
+    [transactions, period]
+  );
+  const summary = useMemo(
+    () => summarizePeriod(periodTransactions, previousPeriodTransactions),
+    [periodTransactions, previousPeriodTransactions]
+  );
+  const topMerchants = useMemo(() => getTopMerchants(periodTransactions), [periodTransactions]);
+
+  const breakdown = useMemo(() => getCategoryBreakdown(periodTransactions), [periodTransactions]);
   const trend = useMemo(() => getLastNDaysExpenseTotals(transactions, 7), [transactions]);
 
   return (
@@ -32,6 +48,14 @@ export function AnalyticsScreen() {
           Analytics
         </Text>
 
+        <View style={{ marginBottom: spacing.lg }}>
+          <PeriodTabs value={period} onChange={setPeriod} />
+        </View>
+
+        <View style={{ marginBottom: spacing.lg }}>
+          <SummaryCards summary={summary} />
+        </View>
+
         <View
           style={[
             styles.card,
@@ -47,7 +71,7 @@ export function AnalyticsScreen() {
         <View
           style={[
             styles.card,
-            { backgroundColor: colors.surface, borderRadius: radii.card, borderColor: colors.border, padding: spacing.lg },
+            { backgroundColor: colors.surface, borderRadius: radii.card, borderColor: colors.border, padding: spacing.lg, marginBottom: spacing.lg },
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
@@ -84,10 +108,30 @@ export function AnalyticsScreen() {
                   </View>
                 ))}
                 <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginTop: spacing.xs }}>
-                  Total: {formatCurrency(totalExpense)}
+                  Total: {formatCurrency(summary.spent)}
                 </Text>
               </View>
             </View>
+          )}
+        </View>
+
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: colors.surface, borderRadius: radii.card, borderColor: colors.border, padding: spacing.lg },
+          ]}
+        >
+          <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
+            Top merchants
+          </Text>
+          {topMerchants.length === 0 ? (
+            <EmptyState
+              icon="storefront-outline"
+              title="No merchants yet"
+              description="Spending by merchant will show up here."
+            />
+          ) : (
+            <TopMerchants merchants={topMerchants} />
           )}
         </View>
       </ScrollView>
