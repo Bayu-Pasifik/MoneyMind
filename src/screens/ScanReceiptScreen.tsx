@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -206,7 +209,15 @@ export function ScanReceiptScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={{ padding: spacing.xl }}>
+      <KeyboardAvoidingView
+        style={styles.flexFill}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.xl }}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text
           accessibilityRole="header"
           style={{
@@ -352,13 +363,17 @@ export function ScanReceiptScreen({ navigation }: Props) {
             Retake
           </Text>
         </Pressable>
-      </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  flexFill: {
     flex: 1,
   },
   centered: {
