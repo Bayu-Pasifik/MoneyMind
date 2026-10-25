@@ -65,6 +65,7 @@ export function RootNavigator() {
               component={TransactionDetailScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
@@ -81,6 +82,7 @@ export function RootNavigator() {
               component={ExportSheetScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
@@ -89,6 +91,7 @@ export function RootNavigator() {
               component={AddTransactionScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
@@ -97,6 +100,7 @@ export function RootNavigator() {
               component={CategoryPickerScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
@@ -105,6 +109,7 @@ export function RootNavigator() {
               component={BudgetSettingsScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
@@ -113,6 +118,7 @@ export function RootNavigator() {
               component={UpcomingFormScreen}
               options={{
                 presentation: 'modal',
+                animation: 'slide_from_bottom',
                 headerShown: false,
               }}
             />
