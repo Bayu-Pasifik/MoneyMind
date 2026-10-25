@@ -21,29 +21,13 @@ import { RootStackParamList } from '../navigation/types';
 import { ScanViewfinder } from '../components/ScanViewfinder';
 import { CATEGORY_LABEL } from '../utils/categories';
 import { formatDate } from '../utils/format';
+import { extractReceiptFromImage, OcrError } from '../utils/ocr';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanReceipt'>;
 
 type Step = 'capture' | 'processing' | 'review';
 
-type ExtractedReceipt = {
-  merchant: string;
-  amount: string;
-  category: TransactionCategory;
-  itemCount: number;
-};
-
 const RECEIPT_CATEGORIES: TransactionCategory[] = ['food', 'shopping', 'bills', 'other'];
-
-/** Mocks on-device OCR: a real receipt-parsing model is out of scope here. */
-function mockExtractReceipt(): ExtractedReceipt {
-  const merchants = ['Warung Makan Sedap', 'Indomaret', 'Alfamart', 'Kopi Kenangan'];
-  const merchant = merchants[Math.floor(Math.random() * merchants.length)];
-  const amount = String(10000 * Math.ceil(Math.random() * 15));
-  const category = RECEIPT_CATEGORIES[Math.floor(Math.random() * RECEIPT_CATEGORIES.length)];
-  const itemCount = 1 + Math.floor(Math.random() * 6);
-  return { merchant, amount, category, itemCount };
-}
 
 export function ScanReceiptScreen({ navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
@@ -57,18 +41,34 @@ export function ScanReceiptScreen({ navigation }: Props) {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<TransactionCategory>('food');
   const [itemCount, setItemCount] = useState(1);
+  const [ocrVerified, setOcrVerified] = useState(false);
+  const [ocrError, setOcrError] = useState<string | null>(null);
 
   const processCapture = async (uri: string) => {
     setPhotoUri(uri);
     setStep('processing');
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    const extracted = mockExtractReceipt();
-    setMerchant(extracted.merchant);
-    setAmount(extracted.amount);
-    setCategory(extracted.category);
-    setItemCount(extracted.itemCount);
-    setStep('review');
-    announce('Receipt scanned, review the details');
+    setOcrError(null);
+    try {
+      const extracted = await extractReceiptFromImage(uri);
+      setMerchant(extracted.merchant);
+      setAmount(String(extracted.amount));
+      setCategory(extracted.category);
+      setItemCount(extracted.itemCount);
+      setOcrVerified(true);
+      setStep('review');
+      announce('Receipt scanned, review the details');
+    } catch (error) {
+      console.log('[OCR] error:', error);
+      const message = error instanceof OcrError ? error.message : 'Could not read this receipt. Try again or enter it manually.';
+      setMerchant('');
+      setAmount('');
+      setCategory('other');
+      setItemCount(1);
+      setOcrVerified(false);
+      setOcrError(message);
+      setStep('review');
+      announce(message);
+    }
   };
 
   const handleCapture = async () => {
@@ -223,6 +223,20 @@ export function ScanReceiptScreen({ navigation }: Props) {
           <Image source={{ uri: photoUri }} style={[styles.preview, { borderRadius: radii.lg, marginBottom: spacing.lg }]} />
         ) : null}
 
+        {ocrError ? (
+          <View
+            style={[
+              styles.errorBanner,
+              { backgroundColor: '#FEF0F0', borderColor: colors.dangerText, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.lg },
+            ]}
+          >
+            <Ionicons name="alert-circle-outline" size={18} color={colors.dangerText} />
+            <Text style={{ color: colors.dangerText, fontSize: typography.size.sm, marginLeft: spacing.sm, flex: 1 }}>
+              {ocrError}
+            </Text>
+          </View>
+        ) : null}
+
         <View
           style={[
             styles.extractedCard,
@@ -233,10 +247,17 @@ export function ScanReceiptScreen({ navigation }: Props) {
             <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
               Extracted details
             </Text>
-            <View style={[styles.verifiedBadge, { backgroundColor: '#E6FAF4', borderRadius: radii.pill }]}>
-              <Ionicons name="checkmark-circle" size={12} color="#00795E" />
-              <Text style={styles.verifiedLabel}>AI Verified</Text>
-            </View>
+            {ocrVerified ? (
+              <View style={[styles.verifiedBadge, { backgroundColor: '#E6FAF4', borderRadius: radii.pill }]}>
+                <Ionicons name="checkmark-circle" size={12} color="#00795E" />
+                <Text style={styles.verifiedLabel}>OCR Verified</Text>
+              </View>
+            ) : (
+              <View style={[styles.verifiedBadge, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}>
+                <Ionicons name="create-outline" size={12} color={colors.textSecondary} />
+                <Text style={[styles.verifiedLabel, { color: colors.textSecondary }]}>Needs review</Text>
+              </View>
+            )}
           </View>
           <View style={[styles.extractedRow, { borderBottomColor: colors.border }]}>
             <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>Date</Text>
@@ -397,6 +418,11 @@ const styles = StyleSheet.create({
   preview: {
     width: '100%',
     height: 220,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
   },
   extractedCard: {
     borderWidth: 1,
