@@ -7,6 +7,7 @@ import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
 import { ScanReceiptScreen } from '../screens/ScanReceiptScreen';
+import { ExportSheetScreen } from '../screens/ExportSheetScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -43,6 +44,14 @@ export function RootNavigator() {
             component={ScanReceiptScreen}
             options={{
               presentation: 'fullScreenModal',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ExportSheet"
+            component={ExportSheetScreen}
+            options={{
+              presentation: 'modal',
               headerShown: false,
             }}
           />

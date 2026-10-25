@@ -33,7 +33,8 @@
         {
           "photosPermission": "MoneyMind uses your photos to attach receipt images."
         }
-      ]
+      ],
+      "expo-sharing"
     ]
   }
 }

@@ -2,9 +2,11 @@ import React from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ThemePreference, useTheme } from '../theme/ThemeContext';
 import { SettingsRow } from '../components/SettingsRow';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { RootStackParamList } from '../navigation/types';
 
 const THEME_LABEL: Record<string, string> = {
   system: 'System',
@@ -15,6 +17,7 @@ const THEME_LABEL: Record<string, string> = {
 export function SettingsScreen() {
   const { colors, spacing, radii, typography, preference, setPreference } = useTheme();
   const announce = useAnnounce();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const cycleTheme = () => {
     const order: ThemePreference[] = ['system', 'light', 'dark'];
@@ -69,6 +72,12 @@ export function SettingsScreen() {
           />
           <Divider />
           <SettingsRow icon="cash-outline" label="Currency" value="IDR" />
+          <Divider />
+          <SettingsRow
+            icon="download-outline"
+            label="Export transactions"
+            onPress={() => navigation.navigate('ExportSheet')}
+          />
         </View>
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
