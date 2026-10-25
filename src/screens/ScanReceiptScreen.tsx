@@ -16,8 +16,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
-import { Transaction } from '../types/transaction';
+import { Transaction, TransactionCategory } from '../types/transaction';
 import { RootStackParamList } from '../navigation/types';
+import { ScanViewfinder } from '../components/ScanViewfinder';
+import { CATEGORY_LABEL } from '../utils/categories';
+import { formatDate } from '../utils/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanReceipt'>;
 
@@ -26,14 +29,20 @@ type Step = 'capture' | 'processing' | 'review';
 type ExtractedReceipt = {
   merchant: string;
   amount: string;
+  category: TransactionCategory;
+  itemCount: number;
 };
+
+const RECEIPT_CATEGORIES: TransactionCategory[] = ['food', 'shopping', 'bills', 'other'];
 
 /** Mocks on-device OCR: a real receipt-parsing model is out of scope here. */
 function mockExtractReceipt(): ExtractedReceipt {
   const merchants = ['Warung Makan Sedap', 'Indomaret', 'Alfamart', 'Kopi Kenangan'];
   const merchant = merchants[Math.floor(Math.random() * merchants.length)];
   const amount = String(10000 * Math.ceil(Math.random() * 15));
-  return { merchant, amount };
+  const category = RECEIPT_CATEGORIES[Math.floor(Math.random() * RECEIPT_CATEGORIES.length)];
+  const itemCount = 1 + Math.floor(Math.random() * 6);
+  return { merchant, amount, category, itemCount };
 }
 
 export function ScanReceiptScreen({ navigation }: Props) {
@@ -46,6 +55,8 @@ export function ScanReceiptScreen({ navigation }: Props) {
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [merchant, setMerchant] = useState('');
   const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState<TransactionCategory>('food');
+  const [itemCount, setItemCount] = useState(1);
 
   const processCapture = async (uri: string) => {
     setPhotoUri(uri);
@@ -54,6 +65,8 @@ export function ScanReceiptScreen({ navigation }: Props) {
     const extracted = mockExtractReceipt();
     setMerchant(extracted.merchant);
     setAmount(extracted.amount);
+    setCategory(extracted.category);
+    setItemCount(extracted.itemCount);
     setStep('review');
     announce('Receipt scanned, review the details');
   };
@@ -88,7 +101,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
       merchant: merchant.trim(),
       amount: parsedAmount,
       type: 'expense',
-      category: 'other',
+      category,
       date: new Date().toISOString(),
       receiptImageUri: photoUri,
       accountName: 'Cash Wallet',
@@ -154,6 +167,9 @@ export function ScanReceiptScreen({ navigation }: Props) {
           >
             <Ionicons name="close" size={22} color="#FFFFFF" />
           </Pressable>
+          <View style={styles.viewfinderWrap}>
+            <ScanViewfinder />
+          </View>
           <View style={styles.bottomControls}>
             <Pressable
               accessibilityRole="button"
@@ -205,6 +221,65 @@ export function ScanReceiptScreen({ navigation }: Props) {
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={[styles.preview, { borderRadius: radii.lg, marginBottom: spacing.lg }]} />
         ) : null}
+
+        <View
+          style={[
+            styles.extractedCard,
+            { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.card, padding: spacing.lg, marginBottom: spacing.lg },
+          ]}
+        >
+          <View style={styles.extractedHeader}>
+            <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
+              Extracted details
+            </Text>
+            <View style={[styles.verifiedBadge, { backgroundColor: '#E6FAF4', borderRadius: radii.pill }]}>
+              <Ionicons name="checkmark-circle" size={12} color="#00795E" />
+              <Text style={styles.verifiedLabel}>AI Verified</Text>
+            </View>
+          </View>
+          <View style={[styles.extractedRow, { borderBottomColor: colors.border }]}>
+            <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>Date</Text>
+            <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
+              {formatDate(new Date().toISOString())}
+            </Text>
+          </View>
+          <View style={[styles.extractedRow, { borderBottomColor: colors.border }]}>
+            <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>Items</Text>
+            <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
+              {itemCount} item{itemCount === 1 ? '' : 's'}
+            </Text>
+          </View>
+          <View style={{ marginTop: spacing.sm }}>
+            <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginBottom: spacing.xs }}>Category</Text>
+            <View style={styles.categoryRow}>
+              {RECEIPT_CATEGORIES.map((option) => {
+                const selected = option === category;
+                return (
+                  <Pressable
+                    key={option}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setCategory(option)}
+                    style={[
+                      styles.categoryChip,
+                      {
+                        backgroundColor: selected ? colors.primaryLight : colors.surfaceAlt,
+                        borderColor: selected ? colors.primary : 'transparent',
+                        borderRadius: radii.pill,
+                        paddingHorizontal: spacing.sm,
+                        paddingVertical: 4,
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: selected ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '600' }}>
+                      {CATEGORY_LABEL[option]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </View>
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
           Merchant
@@ -286,6 +361,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 16,
   },
+  viewfinderWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bottomControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,6 +396,42 @@ const styles = StyleSheet.create({
   preview: {
     width: '100%',
     height: 220,
+  },
+  extractedCard: {
+    borderWidth: 1,
+  },
+  extractedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  verifiedLabel: {
+    color: '#00795E',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  extractedRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  categoryChip: {
+    borderWidth: 1,
   },
   input: {
     borderWidth: 1,
