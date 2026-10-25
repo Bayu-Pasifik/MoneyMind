@@ -21,7 +21,7 @@ import {
 
 const THEME_STORAGE_KEY = 'moneymind:theme-preference';
 
-type ThemePreference = ThemeMode | 'system';
+export type ThemePreference = ThemeMode | 'system';
 
 type ThemeContextValue = {
   mode: ThemeMode;
