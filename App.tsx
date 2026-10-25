@@ -3,7 +3,7 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
-import { ThemePreviewScreen } from './src/screens/ThemePreviewScreen';
+import { RootNavigator } from './src/navigation/RootNavigator';
 
 function ThemedStatusBar() {
   const { mode } = useTheme();
@@ -15,7 +15,7 @@ export default function App() {
     <ThemeProvider>
       <SafeAreaProvider>
         <ThemedStatusBar />
-        <ThemePreviewScreen />
+        <RootNavigator />
       </SafeAreaProvider>
     </ThemeProvider>
   );
