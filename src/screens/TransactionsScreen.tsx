@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
-import { SectionList, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
 import { SwipeableTransactionRow } from '../components/SwipeableTransactionRow';
@@ -30,19 +31,31 @@ export function TransactionsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text
-        accessibilityRole="header"
-        style={{
-          color: colors.textPrimary,
-          fontSize: typography.size.xxl,
-          fontWeight: typography.weight.bold,
-          paddingHorizontal: spacing.lg,
-          paddingTop: spacing.md,
-          paddingBottom: spacing.lg,
-        }}
+      <View
+        style={[
+          styles.header,
+          { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.lg },
+        ]}
       >
-        Transactions
-      </Text>
+        <Text
+          accessibilityRole="header"
+          style={{
+            color: colors.textPrimary,
+            fontSize: typography.size.xxl,
+            fontWeight: typography.weight.bold,
+          }}
+        >
+          Transactions
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Scan a receipt"
+          onPress={() => navigation.navigate('ScanReceipt')}
+          style={[styles.scanButton, { backgroundColor: colors.primary }]}
+        >
+          <Ionicons name="camera-outline" size={20} color={colors.primaryText} />
+        </Pressable>
+      </View>
       {transactions.length === 0 ? (
         <EmptyState
           icon="receipt-outline"
@@ -84,5 +97,17 @@ export function TransactionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  scanButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

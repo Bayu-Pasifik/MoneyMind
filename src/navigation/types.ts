@@ -9,4 +9,5 @@ export type MainTabsParamList = {
 export type RootStackParamList = {
   MainTabs: undefined;
   TransactionDetail: { transactionId: string };
+  ScanReceipt: undefined;
 };

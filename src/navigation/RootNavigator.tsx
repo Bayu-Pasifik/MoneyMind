@@ -6,6 +6,7 @@ import { TransactionsProvider } from '../store/TransactionsContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
+import { ScanReceiptScreen } from '../screens/ScanReceiptScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -34,6 +35,14 @@ export function RootNavigator() {
             component={TransactionDetailScreen}
             options={{
               presentation: 'modal',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ScanReceipt"
+            component={ScanReceiptScreen}
+            options={{
+              presentation: 'fullScreenModal',
               headerShown: false,
             }}
           />
