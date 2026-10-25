@@ -9,6 +9,7 @@ import { SettingsRow } from '../components/SettingsRow';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
+import { useTelegram } from '../store/TelegramContext';
 
 const THEME_LABEL: Record<string, string> = {
   system: 'System',
@@ -21,10 +22,21 @@ export function SettingsScreen() {
   const announce = useAnnounce();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { enabled: captureEnabled, setEnabled: setCaptureEnabled } = useNotificationCapture();
+  const { connected: telegramConnected, username, connect, disconnect, weeklyReport, setWeeklyReport } = useTelegram();
 
   const toggleCapture = (value: boolean) => {
     setCaptureEnabled(value);
     announce(value ? 'Notification capture enabled' : 'Notification capture disabled');
+  };
+
+  const toggleTelegram = (value: boolean) => {
+    if (value) {
+      connect();
+      announce('Telegram connected');
+    } else {
+      disconnect();
+      announce('Telegram disconnected');
+    }
   };
 
   const cycleTheme = () => {
@@ -89,6 +101,35 @@ export function SettingsScreen() {
               />
             }
           />
+          <Divider />
+          <SettingsRow
+            icon="paper-plane-outline"
+            label="Telegram"
+            value={telegramConnected ? `Connected · ${username}` : 'Not connected'}
+            right={
+              <Switch
+                value={telegramConnected}
+                onValueChange={toggleTelegram}
+                trackColor={{ true: colors.telegram }}
+              />
+            }
+          />
+          {telegramConnected ? (
+            <>
+              <Divider />
+              <SettingsRow
+                icon="calendar-outline"
+                label="Weekly AI Report"
+                right={
+                  <Switch
+                    value={weeklyReport}
+                    onValueChange={setWeeklyReport}
+                    trackColor={{ true: colors.primary }}
+                  />
+                }
+              />
+            </>
+          ) : null}
           <Divider />
           <SettingsRow icon="cash-outline" label="Currency" value="IDR" />
           <Divider />

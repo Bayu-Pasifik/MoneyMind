@@ -17,6 +17,22 @@ export function generateAssistantReply(question: string, transactions: Transacti
     .filter((item) => item.type === 'income')
     .reduce((sum, item) => sum + item.amount, 0);
 
+  if (/^\/add/.test(normalized)) {
+    return 'Tap "Add Manual" on Home, or send a receipt photo here to log a new transaction.';
+  }
+
+  if (/^\/report/.test(normalized)) {
+    const breakdown = getCategoryBreakdown(transactions);
+    const top = breakdown[0];
+    return top
+      ? `This period: ${formatCurrency(totalIncome)} in, ${formatCurrency(totalExpense)} out. Top category: ${CATEGORY_LABEL[top.category]}.`
+      : `This period: ${formatCurrency(totalIncome)} in, ${formatCurrency(totalExpense)} out.`;
+  }
+
+  if (/^\/summary/.test(normalized)) {
+    return `Balance ${formatCurrency(totalIncome - totalExpense)} · Income ${formatCurrency(totalIncome)} · Expenses ${formatCurrency(totalExpense)}.`;
+  }
+
   if (/balance/.test(normalized)) {
     return `Your current balance is ${formatCurrency(totalIncome - totalExpense)}.`;
   }

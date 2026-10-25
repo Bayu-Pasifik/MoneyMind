@@ -13,21 +13,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
+import { useTelegram } from '../store/TelegramContext';
 import { ChatBubble } from '../components/ChatBubble';
+import { TelegramConnectBanner } from '../components/TelegramConnectBanner';
 import { generateAssistantReply } from '../utils/chatBot';
 import { useAnnounce } from '../hooks/useAnnounce';
 
 type Message = {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'telegram';
   text: string;
 };
 
 const SUGGESTIONS = ['How much did I spend?', 'What is my balance?', 'Top category?'];
+const SLASH_COMMANDS = ['/summary', '/balance', '/add expense', '/budget', '/report'];
 
 export function ChatScreen() {
   const { colors, spacing, radii, typography } = useTheme();
   const { transactions } = useTransactions();
+  const { connected } = useTelegram();
   const announce = useAnnounce();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -38,11 +42,11 @@ export function ChatScreen() {
   ]);
   const [draft, setDraft] = useState('');
 
-  const sendMessage = (text: string) => {
+  const sendMessage = (text: string, role: 'user' | 'telegram' = 'user') => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const userMessage: Message = { id: `u-${Date.now()}`, role: 'user', text: trimmed };
+    const userMessage: Message = { id: `u-${Date.now()}`, role, text: trimmed };
     const reply = generateAssistantReply(trimmed, transactions);
     const assistantMessage: Message = { id: `a-${Date.now()}`, role: 'assistant', text: reply };
 
@@ -67,6 +71,8 @@ export function ChatScreen() {
         AI Chat
       </Text>
 
+      <TelegramConnectBanner />
+
       <KeyboardAvoidingView
         style={styles.flexFill}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -77,6 +83,26 @@ export function ChatScreen() {
           contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md }}
           renderItem={({ item }) => <ChatBubble text={item.text} role={item.role} />}
         />
+
+        {connected ? (
+          <View style={[styles.suggestionsRow, { paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
+            {SLASH_COMMANDS.map((command) => (
+              <Pressable
+                key={command}
+                accessibilityRole="button"
+                onPress={() => sendMessage(command)}
+                style={[
+                  styles.suggestionChip,
+                  { backgroundColor: '#E3F5FC', borderColor: '#B8E4F5', borderRadius: radii.pill, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+                ]}
+              >
+                <Text style={{ color: colors.telegram, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
+                  {command}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         <View style={[styles.suggestionsRow, { paddingHorizontal: spacing.lg, marginBottom: spacing.sm }]}>
           {SUGGESTIONS.map((suggestion) => (

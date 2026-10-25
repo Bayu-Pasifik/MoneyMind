@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeContext';
 import { TransactionsProvider } from '../store/TransactionsContext';
 import { NotificationCaptureProvider } from '../store/NotificationCaptureContext';
+import { TelegramProvider } from '../store/TelegramContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -32,6 +33,7 @@ export function RootNavigator() {
   return (
     <TransactionsProvider>
       <NotificationCaptureProvider>
+      <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
@@ -77,6 +79,7 @@ export function RootNavigator() {
             />
           </Stack.Navigator>
         </NavigationContainer>
+      </TelegramProvider>
       </NotificationCaptureProvider>
     </TransactionsProvider>
   );
