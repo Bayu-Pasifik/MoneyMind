@@ -11,9 +11,11 @@ import { AiInsightCard } from '../components/AiInsightCard';
 import { NotifCaptureBanner } from '../components/NotifCaptureBanner';
 import { TransactionRow } from '../components/TransactionRow';
 import { EmptyState } from '../components/EmptyState';
+import { UpcomingList } from '../components/UpcomingList';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction } from '../types/transaction';
 import { generateHomeInsight } from '../utils/insight';
+import { upcomingTransactions } from '../utils/upcoming';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
 
 const RECENT_COUNT = 5;
@@ -114,6 +116,9 @@ export function HomeScreen() {
                 message={insight}
                 onPress={() => navigation.navigate('MainTabs', { screen: 'Chat' })}
               />
+            </View>
+            <View style={{ marginBottom: spacing.lg }}>
+              <UpcomingList items={upcomingTransactions} />
             </View>
             <Text
               style={{
