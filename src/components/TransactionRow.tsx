@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { Transaction } from '../types/transaction';
 import { formatCurrency, formatDate } from '../utils/format';
+import { SourcePill } from './SourcePill';
 
 const CATEGORY_ICON: Record<Transaction['category'], keyof typeof Ionicons.glyphMap> = {
   food: 'restaurant-outline',
@@ -59,9 +60,12 @@ export function TransactionRow({ transaction, onPress }: Props) {
         >
           {transaction.title}
         </Text>
-        <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm }}>
-          {formatDate(transaction.date)}
-        </Text>
+        <View style={styles.metaRow}>
+          <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm, marginRight: spacing.xs }}>
+            {formatDate(transaction.date)}
+          </Text>
+          <SourcePill source={transaction.source} />
+        </View>
       </View>
       <Text style={{ color: amountColor, fontSize: typography.size.md, fontWeight: typography.weight.bold }}>
         {sign}
@@ -84,5 +88,10 @@ const styles = StyleSheet.create({
   },
   middle: {
     flex: 1,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
 });

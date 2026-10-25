@@ -105,6 +105,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
       date: new Date().toISOString(),
       receiptImageUri: photoUri,
       accountName: 'Cash Wallet',
+      source: 'scan',
     };
     addTransaction(transaction);
     announce('Receipt saved as a new expense');

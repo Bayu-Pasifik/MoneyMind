@@ -1,5 +1,7 @@
 export type TransactionType = 'income' | 'expense';
 
+export type TransactionSource = 'manual' | 'scan' | 'notification';
+
 export type TransactionCategory =
   | 'food'
   | 'transport'
@@ -22,4 +24,5 @@ export type Transaction = {
   note?: string;
   receiptImageUri?: string;
   accountName?: string;
+  source: TransactionSource;
 };

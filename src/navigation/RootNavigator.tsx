@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeContext';
 import { TransactionsProvider } from '../store/TransactionsContext';
+import { NotificationCaptureProvider } from '../store/NotificationCaptureContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -30,51 +31,53 @@ export function RootNavigator() {
 
   return (
     <TransactionsProvider>
-      <NavigationContainer theme={navigationTheme}>
-        <Stack.Navigator>
-          <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-          <Stack.Screen
-            name="TransactionDetail"
-            component={TransactionDetailScreen}
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="ScanReceipt"
-            component={ScanReceiptScreen}
-            options={{
-              presentation: 'fullScreenModal',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="ExportSheet"
-            component={ExportSheetScreen}
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="AddTransaction"
-            component={AddTransactionScreen}
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="CategoryPicker"
-            component={CategoryPickerScreen}
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <NotificationCaptureProvider>
+        <NavigationContainer theme={navigationTheme}>
+          <Stack.Navigator>
+            <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="TransactionDetail"
+              component={TransactionDetailScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="ScanReceipt"
+              component={ScanReceiptScreen}
+              options={{
+                presentation: 'fullScreenModal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="ExportSheet"
+              component={ExportSheetScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="AddTransaction"
+              component={AddTransactionScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="CategoryPicker"
+              component={CategoryPickerScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NotificationCaptureProvider>
     </TransactionsProvider>
   );
 }

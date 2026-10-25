@@ -11,6 +11,7 @@ const seedTransactions: Transaction[] = [
     category: 'food',
     date: new Date().toISOString(),
     accountName: 'Cash Wallet',
+    source: 'notification',
   },
   {
     id: 't2',
@@ -21,6 +22,7 @@ const seedTransactions: Transaction[] = [
     category: 'salary',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     accountName: 'Main Bank',
+    source: 'manual',
   },
   {
     id: 't3',
@@ -31,6 +33,7 @@ const seedTransactions: Transaction[] = [
     category: 'bills',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     accountName: 'Main Bank',
+    source: 'notification',
   },
   {
     id: 't4',
@@ -41,6 +44,7 @@ const seedTransactions: Transaction[] = [
     category: 'transport',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     accountName: 'Cash Wallet',
+    source: 'notification',
   },
   {
     id: 't5',
@@ -51,6 +55,7 @@ const seedTransactions: Transaction[] = [
     category: 'entertainment',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     accountName: 'Cash Wallet',
+    source: 'manual',
   },
 ];
 

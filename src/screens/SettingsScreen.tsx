@@ -8,6 +8,7 @@ import { ThemePreference, useTheme } from '../theme/ThemeContext';
 import { SettingsRow } from '../components/SettingsRow';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
+import { useNotificationCapture } from '../store/NotificationCaptureContext';
 
 const THEME_LABEL: Record<string, string> = {
   system: 'System',
@@ -19,6 +20,12 @@ export function SettingsScreen() {
   const { colors, spacing, radii, typography, preference, setPreference } = useTheme();
   const announce = useAnnounce();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { enabled: captureEnabled, setEnabled: setCaptureEnabled } = useNotificationCapture();
+
+  const toggleCapture = (value: boolean) => {
+    setCaptureEnabled(value);
+    announce(value ? 'Notification capture enabled' : 'Notification capture disabled');
+  };
 
   const cycleTheme = () => {
     const order: ThemePreference[] = ['system', 'light', 'dark'];
@@ -72,9 +79,15 @@ export function SettingsScreen() {
           <SettingsRow icon="moon-outline" label="Theme" value={THEME_LABEL[preference]} onPress={cycleTheme} />
           <Divider />
           <SettingsRow
-            icon="notifications-outline"
-            label="Notifications"
-            right={<Switch value disabled trackColor={{ true: colors.primary }} />}
+            icon="flash-outline"
+            label="Notification Capture"
+            right={
+              <Switch
+                value={captureEnabled}
+                onValueChange={toggleCapture}
+                trackColor={{ true: colors.primary }}
+              />
+            }
           />
           <Divider />
           <SettingsRow icon="cash-outline" label="Currency" value="IDR" />
@@ -85,6 +98,32 @@ export function SettingsScreen() {
             onPress={() => navigation.navigate('ExportSheet')}
           />
         </View>
+
+        {captureEnabled ? (
+          <View style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
+              Notification Preview
+            </Text>
+            <View
+              style={[
+                styles.previewCard,
+                { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.card, padding: spacing.md },
+              ]}
+            >
+              <View style={[styles.previewIcon, { backgroundColor: colors.primaryLight, borderRadius: radii.sm }]}>
+                <Ionicons name="phone-portrait-outline" size={16} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                <Text style={{ color: colors.textPrimary, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
+                  BCA Mobile
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: typography.size.xs }} numberOfLines={2}>
+                  Debit Rp 45.000 at Coffee Bean Co. detected and logged to MoneyMind.
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
           About
@@ -122,5 +161,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
+  },
+  previewCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  previewIcon: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -8,11 +8,13 @@ import { BalanceHero } from '../components/BalanceHero';
 import { CategoryBudgets } from '../components/CategoryBudgets';
 import { QuickActions } from '../components/QuickActions';
 import { AiInsightCard } from '../components/AiInsightCard';
+import { NotifCaptureBanner } from '../components/NotifCaptureBanner';
 import { TransactionRow } from '../components/TransactionRow';
 import { EmptyState } from '../components/EmptyState';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction } from '../types/transaction';
 import { generateHomeInsight } from '../utils/insight';
+import { useNotificationCapture } from '../store/NotificationCaptureContext';
 
 const RECENT_COUNT = 5;
 
@@ -20,12 +22,26 @@ export function HomeScreen() {
   const { colors, spacing, typography } = useTheme();
   const { transactions, balance, totalIncome, totalExpense } = useTransactions();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { enabled: captureEnabled } = useNotificationCapture();
 
   const recent = [...transactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, RECENT_COUNT);
 
   const insight = useMemo(() => generateHomeInsight(transactions), [transactions]);
+
+  const capturedToday = useMemo(() => {
+    const today = new Date();
+    return transactions.filter((item) => {
+      if (item.source !== 'notification') return false;
+      const date = new Date(item.date);
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    }).length;
+  }, [transactions]);
 
   const handlePress = (transaction: Transaction) => {
     navigation.navigate('TransactionDetail', { transactionId: transaction.id });
@@ -79,6 +95,14 @@ export function HomeScreen() {
               Hi there
             </Text>
             <BalanceHero balance={balance} income={totalIncome} expense={totalExpense} />
+            {captureEnabled && capturedToday > 0 ? (
+              <View style={{ marginTop: spacing.lg }}>
+                <NotifCaptureBanner
+                  count={capturedToday}
+                  onPress={() => navigation.navigate('MainTabs', { screen: 'Transactions' })}
+                />
+              </View>
+            ) : null}
             <View style={{ marginTop: spacing.lg }}>
               <QuickActions actions={quickActions} />
             </View>

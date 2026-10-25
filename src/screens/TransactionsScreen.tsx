@@ -14,7 +14,7 @@ import { groupTransactionsByDay } from '../utils/groupTransactions';
 import { Transaction } from '../types/transaction';
 import { useAnnounce } from '../hooks/useAnnounce';
 
-type FilterKey = 'all' | 'income' | 'expense' | 'food' | 'transport' | 'shopping';
+type FilterKey = 'all' | 'income' | 'expense' | 'food' | 'transport' | 'shopping' | 'auto';
 
 const FILTERS: FilterOption<FilterKey>[] = [
   { key: 'all', label: 'All' },
@@ -23,6 +23,7 @@ const FILTERS: FilterOption<FilterKey>[] = [
   { key: 'food', label: 'Food' },
   { key: 'transport', label: 'Transport' },
   { key: 'shopping', label: 'Shopping' },
+  { key: 'auto', label: 'Auto-captured' },
 ];
 
 export function TransactionsScreen() {
@@ -44,6 +45,7 @@ export function TransactionsScreen() {
         filter === 'all' ||
         (filter === 'income' && item.type === 'income') ||
         (filter === 'expense' && item.type === 'expense') ||
+        (filter === 'auto' && item.source === 'notification') ||
         item.category === filter;
 
       return matchesQuery && matchesFilter;

@@ -56,6 +56,7 @@ export function AddTransactionScreen({ navigation }: Props) {
       category,
       date: new Date().toISOString(),
       accountName: 'Cash Wallet',
+      source: 'manual',
     };
     addTransaction(transaction);
     announce(`${type === 'income' ? 'Income' : 'Expense'} added`);
