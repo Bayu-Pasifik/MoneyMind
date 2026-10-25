@@ -60,6 +60,8 @@ type TransactionsContextValue = {
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
   balance: number;
+  totalIncome: number;
+  totalExpense: number;
 };
 
 const TransactionsContext = createContext<TransactionsContextValue | undefined>(
@@ -79,18 +81,35 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
 
   const getById = (id: string) => transactions.find((item) => item.id === id);
 
-  const balance = useMemo(
+  const totalIncome = useMemo(
     () =>
-      transactions.reduce(
-        (sum, item) => sum + (item.type === 'income' ? item.amount : -item.amount),
-        0
-      ),
+      transactions
+        .filter((item) => item.type === 'income')
+        .reduce((sum, item) => sum + item.amount, 0),
     [transactions]
   );
 
+  const totalExpense = useMemo(
+    () =>
+      transactions
+        .filter((item) => item.type === 'expense')
+        .reduce((sum, item) => sum + item.amount, 0),
+    [transactions]
+  );
+
+  const balance = totalIncome - totalExpense;
+
   const value = useMemo(
-    () => ({ transactions, getById, addTransaction, removeTransaction, balance }),
-    [transactions, balance]
+    () => ({
+      transactions,
+      getById,
+      addTransaction,
+      removeTransaction,
+      balance,
+      totalIncome,
+      totalExpense,
+    }),
+    [transactions, balance, totalIncome, totalExpense]
   );
 
   return (
