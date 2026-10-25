@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { DayTotal } from '../utils/analytics';
+import { formatCurrency } from '../utils/format';
 
 type Props = {
   data: DayTotal[];
@@ -10,9 +11,15 @@ type Props = {
 export function TrendBarChart({ data }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const max = Math.max(...data.map((day) => day.total), 1);
+  const summary = data.map((day) => `${day.label} ${formatCurrency(day.total)}`).join(', ');
 
   return (
-    <View style={styles.row} accessible accessibilityLabel="Daily spending trend, last 7 days">
+    <View
+      style={styles.row}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={`Daily spending, last 7 days: ${summary}`}
+    >
       {data.map((day) => {
         const heightRatio = day.total / max;
         return (

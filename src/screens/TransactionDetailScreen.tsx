@@ -55,6 +55,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close"
+          hitSlop={8}
           onPress={() => navigation.goBack()}
           style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
         >

@@ -126,7 +126,11 @@ export function OnboardingScreen({ onDone }: Props) {
         ))}
       </ScrollView>
 
-      <View style={[styles.dotsRow, { marginBottom: spacing.xl }]}>
+      <View
+        style={[styles.dotsRow, { marginBottom: spacing.xl }]}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
         {SLIDES.map((slide, slideIndex) => (
           <View
             key={slide.title}

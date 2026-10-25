@@ -148,6 +148,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close scanner"
+            hitSlop={8}
             onPress={() => navigation.goBack()}
             style={[styles.closeButton, { backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: radii.pill }]}
           >
