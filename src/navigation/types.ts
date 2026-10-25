@@ -16,4 +16,5 @@ export type RootStackParamList = {
   AddTransaction: { transactionId?: string } | undefined;
   CategoryPicker: { transactionId: string };
   BudgetSettings: undefined;
+  UpcomingForm: { itemId?: string } | undefined;
 };

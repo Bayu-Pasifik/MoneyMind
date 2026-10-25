@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Transaction, TransactionCategory } from '../types/transaction';
+import { UpcomingTransaction } from '../types/upcoming';
 
 const DB_NAME = 'moneymind.db';
 
@@ -33,6 +34,17 @@ export async function initDatabase(): Promise<void> {
     CREATE TABLE IF NOT EXISTS budgets (
       category TEXT PRIMARY KEY NOT NULL,
       monthlyLimit REAL NOT NULL
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS upcoming (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      amount REAL NOT NULL,
+      type TEXT NOT NULL,
+      category TEXT NOT NULL,
+      dueDate TEXT NOT NULL,
+      recurring INTEGER NOT NULL
     );
   `);
 }
@@ -181,4 +193,86 @@ export async function setBudgetLimit(category: TransactionCategory, limit: numbe
 export async function deleteBudget(category: TransactionCategory): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM budgets WHERE category = $category;', { $category: category });
+}
+
+type UpcomingRow = {
+  id: string;
+  title: string;
+  amount: number;
+  type: UpcomingTransaction['type'];
+  category: UpcomingTransaction['category'];
+  dueDate: string;
+  recurring: number;
+};
+
+function rowToUpcoming(row: UpcomingRow): UpcomingTransaction {
+  return {
+    id: row.id,
+    title: row.title,
+    amount: row.amount,
+    type: row.type,
+    category: row.category,
+    dueDate: row.dueDate,
+    recurring: row.recurring === 1,
+  };
+}
+
+export async function getAllUpcoming(): Promise<UpcomingTransaction[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<UpcomingRow>('SELECT * FROM upcoming ORDER BY dueDate ASC;');
+  return rows.map(rowToUpcoming);
+}
+
+export async function insertUpcoming(item: UpcomingTransaction): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO upcoming (id, title, amount, type, category, dueDate, recurring)
+     VALUES ($id, $title, $amount, $type, $category, $dueDate, $recurring);`,
+    {
+      $id: item.id,
+      $title: item.title,
+      $amount: item.amount,
+      $type: item.type,
+      $category: item.category,
+      $dueDate: item.dueDate,
+      $recurring: item.recurring ? 1 : 0,
+    }
+  );
+}
+
+export async function insertUpcomingIfEmpty(seed: UpcomingTransaction[]): Promise<void> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM upcoming;');
+  if ((row?.count ?? 0) > 0) return;
+  for (const item of seed) {
+    await insertUpcoming(item);
+  }
+}
+
+export async function updateUpcomingInDb(item: UpcomingTransaction): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE upcoming SET
+       title = $title,
+       amount = $amount,
+       type = $type,
+       category = $category,
+       dueDate = $dueDate,
+       recurring = $recurring
+     WHERE id = $id;`,
+    {
+      $id: item.id,
+      $title: item.title,
+      $amount: item.amount,
+      $type: item.type,
+      $category: item.category,
+      $dueDate: item.dueDate,
+      $recurring: item.recurring ? 1 : 0,
+    }
+  );
+}
+
+export async function deleteUpcoming(id: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM upcoming WHERE id = $id;', { $id: id });
 }

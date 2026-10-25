@@ -7,6 +7,7 @@ import { TransactionsProvider, useTransactions } from '../store/TransactionsCont
 import { NotificationCaptureProvider } from '../store/NotificationCaptureContext';
 import { TelegramProvider } from '../store/TelegramContext';
 import { BudgetsProvider } from '../store/BudgetsContext';
+import { UpcomingProvider } from '../store/UpcomingContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -15,6 +16,7 @@ import { ExportSheetScreen } from '../screens/ExportSheetScreen';
 import { AddTransactionScreen } from '../screens/AddTransactionScreen';
 import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
 import { BudgetSettingsScreen } from '../screens/BudgetSettingsScreen';
+import { UpcomingFormScreen } from '../screens/UpcomingFormScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -52,6 +54,7 @@ export function RootNavigator() {
     <TransactionsProvider>
       <DatabaseGate>
       <BudgetsProvider>
+      <UpcomingProvider>
       <NotificationCaptureProvider>
       <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
@@ -105,10 +108,19 @@ export function RootNavigator() {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              name="UpcomingForm"
+              component={UpcomingFormScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </TelegramProvider>
       </NotificationCaptureProvider>
+      </UpcomingProvider>
       </BudgetsProvider>
       </DatabaseGate>
     </TransactionsProvider>

@@ -14,17 +14,21 @@ import { EmptyState } from '../components/EmptyState';
 import { UpcomingList } from '../components/UpcomingList';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction } from '../types/transaction';
+import { UpcomingTransaction } from '../types/upcoming';
 import { generateHomeInsight } from '../utils/insight';
-import { upcomingTransactions } from '../utils/upcoming';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
+import { useUpcoming } from '../store/UpcomingContext';
+import { useAnnounce } from '../hooks/useAnnounce';
 
 const RECENT_COUNT = 5;
 
 export function HomeScreen() {
   const { colors, spacing, typography } = useTheme();
-  const { transactions, balance, totalIncome, totalExpense } = useTransactions();
+  const { transactions, balance, totalIncome, totalExpense, addTransaction } = useTransactions();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { enabled: captureEnabled } = useNotificationCapture();
+  const { items: upcomingItems, removeItem: removeUpcoming, rescheduleItem } = useUpcoming();
+  const announce = useAnnounce();
 
   const recent = [...transactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -47,6 +51,26 @@ export function HomeScreen() {
 
   const handlePress = (transaction: Transaction) => {
     navigation.navigate('TransactionDetail', { transactionId: transaction.id });
+  };
+
+  const handleMarkUpcomingPaid = (item: UpcomingTransaction) => {
+    addTransaction({
+      id: `upcoming-paid-${Date.now()}`,
+      title: item.title,
+      amount: item.amount,
+      type: item.type,
+      category: item.category,
+      date: new Date().toISOString(),
+      accountName: 'Cash Wallet',
+      source: 'manual',
+    });
+    if (item.recurring) {
+      rescheduleItem(item.id);
+      announce(`${item.title} marked paid and rescheduled for next month`);
+    } else {
+      removeUpcoming(item.id);
+      announce(`${item.title} marked paid`);
+    }
   };
 
   const quickActions = [
@@ -121,7 +145,12 @@ export function HomeScreen() {
               />
             </View>
             <View style={{ marginBottom: spacing.lg }}>
-              <UpcomingList items={upcomingTransactions} />
+              <UpcomingList
+                items={upcomingItems}
+                onAdd={() => navigation.navigate('UpcomingForm')}
+                onPressItem={(item) => navigation.navigate('UpcomingForm', { itemId: item.id })}
+                onMarkPaid={handleMarkUpcomingPaid}
+              />
             </View>
             <Text
               style={{
