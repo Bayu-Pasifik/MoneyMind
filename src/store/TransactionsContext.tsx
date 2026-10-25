@@ -7,6 +7,7 @@ import {
   insertTransaction,
   insertTransactionsIfEmpty,
   updateTransactionCategoryInDb,
+  updateTransactionInDb,
 } from './database';
 
 const seedTransactions: Transaction[] = [
@@ -73,6 +74,7 @@ type TransactionsContextValue = {
   getById: (id: string) => Transaction | undefined;
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
+  updateTransaction: (transaction: Transaction) => void;
   updateTransactionCategory: (id: string, category: TransactionCategory) => void;
   balance: number;
   totalIncome: number;
@@ -111,6 +113,15 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
     deleteTransaction(id).catch((error) => console.error('[db] delete failed', error));
   };
 
+  const updateTransaction = (transaction: Transaction) => {
+    setTransactions((prev) =>
+      prev.map((item) => (item.id === transaction.id ? transaction : item))
+    );
+    updateTransactionInDb(transaction).catch((error) =>
+      console.error('[db] update failed', error)
+    );
+  };
+
   const updateTransactionCategory = (id: string, category: TransactionCategory) => {
     setTransactions((prev) =>
       prev.map((item) => (item.id === id ? { ...item, category } : item))
@@ -147,6 +158,7 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
       getById,
       addTransaction,
       removeTransaction,
+      updateTransaction,
       updateTransactionCategory,
       balance,
       totalIncome,

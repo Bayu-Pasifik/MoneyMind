@@ -13,6 +13,6 @@ export type RootStackParamList = {
   TransactionDetail: { transactionId: string };
   ScanReceipt: undefined;
   ExportSheet: undefined;
-  AddTransaction: undefined;
+  AddTransaction: { transactionId?: string } | undefined;
   CategoryPicker: { transactionId: string };
 };

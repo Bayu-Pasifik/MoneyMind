@@ -112,3 +112,28 @@ export async function updateTransactionCategoryInDb(
     $id: id,
   });
 }
+
+export async function updateTransactionInDb(transaction: Transaction): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE transactions SET
+       title = $title,
+       merchant = $merchant,
+       amount = $amount,
+       type = $type,
+       category = $category,
+       note = $note,
+       accountName = $accountName
+     WHERE id = $id;`,
+    {
+      $id: transaction.id,
+      $title: transaction.title,
+      $merchant: transaction.merchant ?? null,
+      $amount: transaction.amount,
+      $type: transaction.type,
+      $category: transaction.category,
+      $note: transaction.note ?? null,
+      $accountName: transaction.accountName ?? null,
+    }
+  );
+}

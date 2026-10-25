@@ -22,15 +22,19 @@ const EXPENSE_CATEGORIES: TransactionCategory[] = [
 ];
 const INCOME_CATEGORIES: TransactionCategory[] = ['salary', 'transfer', 'other'];
 
-export function AddTransactionScreen({ navigation }: Props) {
+export function AddTransactionScreen({ navigation, route }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
-  const { addTransaction } = useTransactions();
+  const { addTransaction, updateTransaction, getById } = useTransactions();
   const announce = useAnnounce();
 
-  const [type, setType] = useState<TransactionType>('expense');
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<TransactionCategory>('food');
+  const editingId = route.params?.transactionId;
+  const existing = editingId ? getById(editingId) : undefined;
+  const isEditing = Boolean(existing);
+
+  const [type, setType] = useState<TransactionType>(existing?.type ?? 'expense');
+  const [title, setTitle] = useState(existing?.title ?? '');
+  const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
+  const [category, setCategory] = useState<TransactionCategory>(existing?.category ?? 'food');
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
@@ -48,18 +52,31 @@ export function AddTransactionScreen({ navigation }: Props) {
       announce('Enter a title and a valid amount before saving');
       return;
     }
-    const transaction: Transaction = {
-      id: `manual-${Date.now()}`,
-      title: title.trim(),
-      amount: parsedAmount,
-      type,
-      category,
-      date: new Date().toISOString(),
-      accountName: 'Cash Wallet',
-      source: 'manual',
-    };
-    addTransaction(transaction);
-    announce(`${type === 'income' ? 'Income' : 'Expense'} added`);
+
+    if (existing) {
+      const updated: Transaction = {
+        ...existing,
+        title: title.trim(),
+        amount: parsedAmount,
+        type,
+        category,
+      };
+      updateTransaction(updated);
+      announce('Transaction updated');
+    } else {
+      const transaction: Transaction = {
+        id: `manual-${Date.now()}`,
+        title: title.trim(),
+        amount: parsedAmount,
+        type,
+        category,
+        date: new Date().toISOString(),
+        accountName: 'Cash Wallet',
+        source: 'manual',
+      };
+      addTransaction(transaction);
+      announce(`${type === 'income' ? 'Income' : 'Expense'} added`);
+    }
     navigation.goBack();
   };
 
@@ -76,7 +93,7 @@ export function AddTransactionScreen({ navigation }: Props) {
             marginBottom: spacing.lg,
           }}
         >
-          Add transaction
+          {isEditing ? 'Edit transaction' : 'Add transaction'}
         </Text>
 
         <View style={[styles.typeRow, { marginBottom: spacing.lg }]}>
@@ -176,7 +193,7 @@ export function AddTransactionScreen({ navigation }: Props) {
           style={[styles.saveButton, { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md }]}
         >
           <Text style={{ color: colors.primaryText, fontWeight: typography.weight.semibold }}>
-            Save {type === 'income' ? 'income' : 'expense'}
+            {isEditing ? 'Save changes' : `Save ${type === 'income' ? 'income' : 'expense'}`}
           </Text>
         </Pressable>
       </ScrollView>

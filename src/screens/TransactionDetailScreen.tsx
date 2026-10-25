@@ -52,15 +52,26 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.handle, { backgroundColor: colors.border }]} />
       <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          hitSlop={8}
-          onPress={() => navigation.goBack()}
-          style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
-        >
-          <Ionicons name="close" size={18} color={colors.textPrimary} />
-        </Pressable>
+        <View style={styles.headerRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            hitSlop={8}
+            onPress={() => navigation.goBack()}
+            style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
+          >
+            <Ionicons name="close" size={18} color={colors.textPrimary} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Edit transaction"
+            hitSlop={8}
+            onPress={() => navigation.navigate('AddTransaction', { transactionId: transaction.id })}
+            style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
+          >
+            <Ionicons name="create-outline" size={18} color={colors.textPrimary} />
+          </Pressable>
+        </View>
 
         <Text
           style={{
@@ -134,6 +145,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   closeButton: {
     width: 32,
