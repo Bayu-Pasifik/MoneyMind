@@ -8,6 +8,8 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction, TransactionCategory, TransactionType } from '../types/transaction';
 import { CATEGORY_LABEL } from '../utils/categories';
+import { formatDate } from '../utils/format';
+import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddTransaction'>;
 
@@ -35,6 +37,9 @@ export function AddTransactionScreen({ navigation, route }: Props) {
   const [title, setTitle] = useState(existing?.title ?? '');
   const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
   const [category, setCategory] = useState<TransactionCategory>(existing?.category ?? 'food');
+  const [dateText, setDateText] = useState(
+    existing ? toDateInputValue(existing.date) : toDateInputValue(new Date().toISOString())
+  );
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
@@ -52,6 +57,11 @@ export function AddTransactionScreen({ navigation, route }: Props) {
       announce('Enter a title and a valid amount before saving');
       return;
     }
+    const date = fromDateInputValue(dateText);
+    if (!date) {
+      announce('Enter the date as YYYY-MM-DD');
+      return;
+    }
 
     if (existing) {
       const updated: Transaction = {
@@ -60,6 +70,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         amount: parsedAmount,
         type,
         category,
+        date,
       };
       updateTransaction(updated);
       announce('Transaction updated');
@@ -70,7 +81,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         amount: parsedAmount,
         type,
         category,
-        date: new Date().toISOString(),
+        date,
         accountName: 'Cash Wallet',
         source: 'manual',
       };
@@ -155,6 +166,30 @@ export function AddTransactionScreen({ navigation, route }: Props) {
             { color: colors.textPrimary, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.md, marginBottom: spacing.lg },
           ]}
         />
+
+        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
+          Date (YYYY-MM-DD)
+        </Text>
+        <TextInput
+          value={dateText}
+          onChangeText={setDateText}
+          accessibilityLabel="Date"
+          placeholder={toDateInputValue(new Date().toISOString())}
+          placeholderTextColor={colors.textTertiary}
+          style={[
+            styles.input,
+            { color: colors.textPrimary, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.md, marginBottom: spacing.xs },
+          ]}
+        />
+        {fromDateInputValue(dateText) ? (
+          <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
+            {formatDate(fromDateInputValue(dateText)!)}
+          </Text>
+        ) : (
+          <Text style={{ color: colors.dangerText, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
+            Use the format YYYY-MM-DD, e.g. {toDateInputValue(new Date().toISOString())}
+          </Text>
+        )}
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
           Category

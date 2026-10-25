@@ -10,23 +10,12 @@ import { TransactionCategory, TransactionType } from '../types/transaction';
 import { UpcomingTransaction } from '../types/upcoming';
 import { CATEGORY_LABEL } from '../utils/categories';
 import { formatDate } from '../utils/format';
+import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UpcomingForm'>;
 
 const EXPENSE_CATEGORIES: TransactionCategory[] = ['bills', 'entertainment', 'food', 'transport', 'shopping', 'health', 'other'];
 const INCOME_CATEGORIES: TransactionCategory[] = ['salary', 'transfer', 'other'];
-
-function toDateInputValue(iso: string): string {
-  return iso.slice(0, 10);
-}
-
-function fromDateInputValue(value: string): string | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
-  if (!match) return null;
-  const date = new Date(`${value.trim()}T09:00:00`);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
-}
 
 export function UpcomingFormScreen({ navigation, route }: Props) {
   const { colors, spacing, radii, typography } = useTheme();

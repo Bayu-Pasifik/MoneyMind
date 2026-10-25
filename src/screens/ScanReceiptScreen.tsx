@@ -24,6 +24,7 @@ import { RootStackParamList } from '../navigation/types';
 import { ScanViewfinder } from '../components/ScanViewfinder';
 import { CATEGORY_LABEL } from '../utils/categories';
 import { formatDate } from '../utils/format';
+import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { extractReceiptFromImage, OcrError } from '../utils/ocr';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanReceipt'>;
@@ -44,6 +45,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<TransactionCategory>('food');
   const [itemCount, setItemCount] = useState(1);
+  const [dateText, setDateText] = useState(toDateInputValue(new Date().toISOString()));
   const [ocrVerified, setOcrVerified] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
 
@@ -57,6 +59,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
       setAmount(String(extracted.amount));
       setCategory(extracted.category);
       setItemCount(extracted.itemCount);
+      setDateText(toDateInputValue(new Date().toISOString()));
       setOcrVerified(true);
       setStep('review');
       announce('Receipt scanned, review the details');
@@ -67,6 +70,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
       setAmount('');
       setCategory('other');
       setItemCount(1);
+      setDateText(toDateInputValue(new Date().toISOString()));
       setOcrVerified(false);
       setOcrError(message);
       setStep('review');
@@ -98,6 +102,11 @@ export function ScanReceiptScreen({ navigation }: Props) {
       announce('Enter a merchant and a valid amount before saving');
       return;
     }
+    const date = fromDateInputValue(dateText);
+    if (!date) {
+      announce('Enter the date as YYYY-MM-DD');
+      return;
+    }
     const transaction: Transaction = {
       id: `scan-${Date.now()}`,
       title: merchant.trim(),
@@ -105,7 +114,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
       amount: parsedAmount,
       type: 'expense',
       category,
-      date: new Date().toISOString(),
+      date,
       receiptImageUri: photoUri,
       accountName: 'Cash Wallet',
       source: 'scan',
@@ -270,11 +279,25 @@ export function ScanReceiptScreen({ navigation }: Props) {
               </View>
             )}
           </View>
-          <View style={[styles.extractedRow, { borderBottomColor: colors.border }]}>
-            <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>Date</Text>
-            <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-              {formatDate(new Date().toISOString())}
-            </Text>
+          <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+            <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginBottom: 4 }}>Date</Text>
+            <TextInput
+              value={dateText}
+              onChangeText={setDateText}
+              accessibilityLabel="Receipt date"
+              placeholder={toDateInputValue(new Date().toISOString())}
+              placeholderTextColor={colors.textTertiary}
+              style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold, padding: 0 }}
+            />
+            {fromDateInputValue(dateText) ? (
+              <Text style={{ color: colors.textTertiary, fontSize: 11, marginTop: 2 }}>
+                {formatDate(fromDateInputValue(dateText)!)}
+              </Text>
+            ) : (
+              <Text style={{ color: colors.dangerText, fontSize: 11, marginTop: 2 }}>
+                Use format YYYY-MM-DD
+              </Text>
+            )}
           </View>
           <View style={[styles.extractedRow, { borderBottomColor: colors.border }]}>
             <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>Items</Text>
