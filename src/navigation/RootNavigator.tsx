@@ -8,6 +8,7 @@ import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
 import { ScanReceiptScreen } from '../screens/ScanReceiptScreen';
 import { ExportSheetScreen } from '../screens/ExportSheetScreen';
+import { AddTransactionScreen } from '../screens/AddTransactionScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -50,6 +51,14 @@ export function RootNavigator() {
           <Stack.Screen
             name="ExportSheet"
             component={ExportSheetScreen}
+            options={{
+              presentation: 'modal',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="AddTransaction"
+            component={AddTransactionScreen}
             options={{
               presentation: 'modal',
               headerShown: false,

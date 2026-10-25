@@ -1,3 +1,5 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
 export type MainTabsParamList = {
   Home: undefined;
   Transactions: undefined;
@@ -7,8 +9,9 @@ export type MainTabsParamList = {
 };
 
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: NavigatorScreenParams<MainTabsParamList>;
   TransactionDetail: { transactionId: string };
   ScanReceipt: undefined;
   ExportSheet: undefined;
+  AddTransaction: undefined;
 };
