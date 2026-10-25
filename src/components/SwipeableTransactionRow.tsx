@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,9 +11,10 @@ type Props = {
   transaction: Transaction;
   onPress: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+  onCategorize: (transaction: Transaction) => void;
 };
 
-export function SwipeableTransactionRow({ transaction, onPress, onDelete }: Props) {
+export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCategorize }: Props) {
   const { colors, spacing, radii } = useTheme();
   const swipeableRef = useRef<SwipeableMethods>(null);
 
@@ -25,21 +26,38 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete }: Prop
 
     return (
       <Animated.View style={[styles.actionWrap, { marginBottom: spacing.sm }, style]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Delete ${transaction.title}`}
-          onPress={() => {
-            swipeableRef.current?.close();
-            onDelete(transaction);
-          }}
-          style={[
-            styles.deleteButton,
-            { backgroundColor: colors.danger, borderRadius: radii.md, paddingHorizontal: spacing.lg },
-          ]}
-        >
-          <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.deleteLabel}>Delete</Text>
-        </Pressable>
+        <View style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Tag ${transaction.title}`}
+            onPress={() => {
+              swipeableRef.current?.close();
+              onCategorize(transaction);
+            }}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.primary, borderTopLeftRadius: radii.md, borderBottomLeftRadius: radii.md },
+            ]}
+          >
+            <Ionicons name="pricetag-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.actionLabel}>Tag</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Delete ${transaction.title}`}
+            onPress={() => {
+              swipeableRef.current?.close();
+              onDelete(transaction);
+            }}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.danger, borderTopRightRadius: radii.md, borderBottomRightRadius: radii.md },
+            ]}
+          >
+            <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.actionLabel}>Delete</Text>
+          </Pressable>
+        </View>
       </Animated.View>
     );
   };
@@ -55,15 +73,19 @@ const styles = StyleSheet.create({
   actionWrap: {
     justifyContent: 'center',
   },
-  deleteButton: {
+  actionRow: {
+    flexDirection: 'row',
     height: '100%',
+  },
+  actionButton: {
+    width: 68,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
+    gap: 3,
   },
-  deleteLabel: {
+  actionLabel: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 10,
   },
 });

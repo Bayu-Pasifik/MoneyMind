@@ -9,6 +9,7 @@ import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
 import { ScanReceiptScreen } from '../screens/ScanReceiptScreen';
 import { ExportSheetScreen } from '../screens/ExportSheetScreen';
 import { AddTransactionScreen } from '../screens/AddTransactionScreen';
+import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -59,6 +60,14 @@ export function RootNavigator() {
           <Stack.Screen
             name="AddTransaction"
             component={AddTransactionScreen}
+            options={{
+              presentation: 'modal',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="CategoryPicker"
+            component={CategoryPickerScreen}
             options={{
               presentation: 'modal',
               headerShown: false,

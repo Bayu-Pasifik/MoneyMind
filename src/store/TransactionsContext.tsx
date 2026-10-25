@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { Transaction } from '../types/transaction';
+import { Transaction, TransactionCategory } from '../types/transaction';
 
 const seedTransactions: Transaction[] = [
   {
@@ -59,6 +59,7 @@ type TransactionsContextValue = {
   getById: (id: string) => Transaction | undefined;
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
+  updateTransactionCategory: (id: string, category: TransactionCategory) => void;
   balance: number;
   totalIncome: number;
   totalExpense: number;
@@ -77,6 +78,12 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
 
   const removeTransaction = (id: string) => {
     setTransactions((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateTransactionCategory = (id: string, category: TransactionCategory) => {
+    setTransactions((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, category } : item))
+    );
   };
 
   const getById = (id: string) => transactions.find((item) => item.id === id);
@@ -105,6 +112,7 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
       getById,
       addTransaction,
       removeTransaction,
+      updateTransactionCategory,
       balance,
       totalIncome,
       totalExpense,
