@@ -1,8 +1,9 @@
 import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeContext';
-import { TransactionsProvider } from '../store/TransactionsContext';
+import { TransactionsProvider, useTransactions } from '../store/TransactionsContext';
 import { NotificationCaptureProvider } from '../store/NotificationCaptureContext';
 import { TelegramProvider } from '../store/TelegramContext';
 import { RootStackParamList } from './types';
@@ -14,6 +15,21 @@ import { AddTransactionScreen } from '../screens/AddTransactionScreen';
 import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function DatabaseGate({ children }: { children: React.ReactNode }) {
+  const { colors } = useTheme();
+  const { isReady } = useTransactions();
+
+  if (!isReady) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export function RootNavigator() {
   const { colors, mode } = useTheme();
@@ -32,6 +48,7 @@ export function RootNavigator() {
 
   return (
     <TransactionsProvider>
+      <DatabaseGate>
       <NotificationCaptureProvider>
       <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
@@ -81,6 +98,7 @@ export function RootNavigator() {
         </NavigationContainer>
       </TelegramProvider>
       </NotificationCaptureProvider>
+      </DatabaseGate>
     </TransactionsProvider>
   );
 }

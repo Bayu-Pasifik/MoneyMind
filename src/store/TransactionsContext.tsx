@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Transaction, TransactionCategory } from '../types/transaction';
+import {
+  deleteTransaction,
+  getAllTransactions,
+  initDatabase,
+  insertTransaction,
+  insertTransactionsIfEmpty,
+  updateTransactionCategoryInDb,
+} from './database';
 
 const seedTransactions: Transaction[] = [
   {
@@ -61,6 +69,7 @@ const seedTransactions: Transaction[] = [
 
 type TransactionsContextValue = {
   transactions: Transaction[];
+  isReady: boolean;
   getById: (id: string) => Transaction | undefined;
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
@@ -75,19 +84,39 @@ const TransactionsContext = createContext<TransactionsContextValue | undefined>(
 );
 
 export function TransactionsProvider({ children }: { children: React.ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      await initDatabase();
+      await insertTransactionsIfEmpty(seedTransactions);
+      const loaded = await getAllTransactions();
+      setTransactions(loaded);
+      setIsReady(true);
+    })().catch((error) => {
+      console.error('[db] failed to load transactions', error);
+      setTransactions(seedTransactions);
+      setIsReady(true);
+    });
+  }, []);
 
   const addTransaction = (transaction: Transaction) => {
     setTransactions((prev) => [transaction, ...prev]);
+    insertTransaction(transaction).catch((error) => console.error('[db] insert failed', error));
   };
 
   const removeTransaction = (id: string) => {
     setTransactions((prev) => prev.filter((item) => item.id !== id));
+    deleteTransaction(id).catch((error) => console.error('[db] delete failed', error));
   };
 
   const updateTransactionCategory = (id: string, category: TransactionCategory) => {
     setTransactions((prev) =>
       prev.map((item) => (item.id === id ? { ...item, category } : item))
+    );
+    updateTransactionCategoryInDb(id, category).catch((error) =>
+      console.error('[db] category update failed', error)
     );
   };
 
@@ -114,6 +143,7 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
   const value = useMemo(
     () => ({
       transactions,
+      isReady,
       getById,
       addTransaction,
       removeTransaction,
@@ -122,7 +152,7 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
       totalIncome,
       totalExpense,
     }),
-    [transactions, balance, totalIncome, totalExpense]
+    [transactions, isReady, balance, totalIncome, totalExpense]
   );
 
   return (
