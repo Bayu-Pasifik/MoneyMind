@@ -20,6 +20,7 @@ export function FilterChips<T extends string>({ options, value, onChange }: Prop
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scrollView}
       contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.sm, alignItems: 'center' }}
     >
       {options.map((option) => {
@@ -58,6 +59,10 @@ export function FilterChips<T extends string>({ options, value, onChange }: Prop
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   chip: {
     borderWidth: 1.5,
   },
