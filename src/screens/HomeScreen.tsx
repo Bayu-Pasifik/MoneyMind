@@ -5,7 +5,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
 import { BalanceHero } from '../components/BalanceHero';
-import { BudgetCard } from '../components/BudgetCard';
+import { CategoryBudgets } from '../components/CategoryBudgets';
 import { QuickActions } from '../components/QuickActions';
 import { AiInsightCard } from '../components/AiInsightCard';
 import { TransactionRow } from '../components/TransactionRow';
@@ -14,7 +14,6 @@ import { RootStackParamList } from '../navigation/types';
 import { Transaction } from '../types/transaction';
 import { generateHomeInsight } from '../utils/insight';
 
-const MONTHLY_BUDGET = 5000000;
 const RECENT_COUNT = 5;
 
 export function HomeScreen() {
@@ -84,7 +83,7 @@ export function HomeScreen() {
               <QuickActions actions={quickActions} />
             </View>
             <View style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
-              <BudgetCard spent={totalExpense} limit={MONTHLY_BUDGET} />
+              <CategoryBudgets transactions={transactions} />
             </View>
             <View style={{ marginBottom: spacing.lg }}>
               <AiInsightCard
