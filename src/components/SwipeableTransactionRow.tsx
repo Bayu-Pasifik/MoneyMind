@@ -1,11 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, {
+  SharedValue,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { Transaction } from '../types/transaction';
 import { TransactionRow } from './TransactionRow';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type Props = {
   transaction: Transaction;
@@ -16,7 +23,27 @@ type Props = {
 
 export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCategorize }: Props) {
   const { colors, spacing, radii } = useTheme();
+  const reducedMotion = useReducedMotion();
   const swipeableRef = useRef<SwipeableMethods>(null);
+  const [rowHeight, setRowHeight] = useState<number | null>(null);
+  const collapse = useSharedValue(1);
+
+  const collapseStyle = useAnimatedStyle(() => ({
+    opacity: collapse.value,
+    transform: [{ scaleY: collapse.value }],
+    height: rowHeight === null ? undefined : rowHeight * collapse.value,
+  }));
+
+  const handleDelete = () => {
+    swipeableRef.current?.close();
+    if (reducedMotion) {
+      onDelete(transaction);
+      return;
+    }
+    collapse.value = withTiming(0, { duration: 220 }, (finished) => {
+      if (finished) runOnJS(onDelete)(transaction);
+    });
+  };
 
   const renderRightActions = (progress: SharedValue<number>) => {
     const style = useAnimatedStyle(() => ({
@@ -45,10 +72,7 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCate
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Delete ${transaction.title}`}
-            onPress={() => {
-              swipeableRef.current?.close();
-              onDelete(transaction);
-            }}
+            onPress={handleDelete}
             style={[
               styles.actionButton,
               { backgroundColor: colors.danger, borderTopRightRadius: radii.md, borderBottomRightRadius: radii.md },
@@ -63,9 +87,16 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCate
   };
 
   return (
-    <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false} friction={2}>
-      <TransactionRow transaction={transaction} onPress={onPress} />
-    </Swipeable>
+    <Animated.View
+      style={collapseStyle}
+      onLayout={(event) => {
+        if (rowHeight === null) setRowHeight(event.nativeEvent.layout.height);
+      }}
+    >
+      <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false} friction={2}>
+        <TransactionRow transaction={transaction} onPress={onPress} />
+      </Swipeable>
+    </Animated.View>
   );
 }
 

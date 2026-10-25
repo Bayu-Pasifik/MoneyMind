@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { TabIcon } from '../components/TabIcon';
 import { MainTabsParamList } from './types';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
@@ -32,8 +33,8 @@ export function MainTabs() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
         },
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name={TAB_ICON[route.name as keyof MainTabsParamList]} size={size} color={color} />
+        tabBarIcon: ({ color, size, focused }) => (
+          <TabIcon name={TAB_ICON[route.name as keyof MainTabsParamList]} size={size} color={color} focused={focused} />
         ),
       })}
     >
