@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ThemePreference, useTheme } from '../theme/ThemeContext';
@@ -43,26 +44,31 @@ export function SettingsScreen() {
           Settings
         </Text>
 
-        <View style={[styles.profileCard, { marginHorizontal: spacing.lg, backgroundColor: colors.surface, borderRadius: radii.lg, borderColor: colors.border, padding: spacing.lg, marginBottom: spacing.xl }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary, borderRadius: radii.pill }]}>
-            <Text style={{ color: colors.primaryText, fontSize: typography.size.lg, fontWeight: typography.weight.bold }}>
+        <LinearGradient
+          colors={[colors.primary, colors.primaryDark]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.profileCard, { marginHorizontal: spacing.lg, borderRadius: radii.xl, padding: spacing.lg, marginBottom: spacing.xl }]}
+        >
+          <View style={[styles.avatar, { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.pill }]}>
+            <Text style={{ color: '#FFFFFF', fontSize: typography.size.lg, fontWeight: typography.weight.bold }}>
               M
             </Text>
           </View>
           <View style={{ marginLeft: spacing.md }}>
-            <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
+            <Text style={{ color: '#FFFFFF', fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
               MoneyMind User
             </Text>
-            <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm }}>
+            <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: typography.size.sm }}>
               user@moneymind.app
             </Text>
           </View>
-        </View>
+        </LinearGradient>
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
           Preferences
         </Text>
-        <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.lg, borderColor: colors.border, borderWidth: 1, marginBottom: spacing.xl }}>
+        <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1, marginBottom: spacing.xl }}>
           <SettingsRow icon="moon-outline" label="Theme" value={THEME_LABEL[preference]} onPress={cycleTheme} />
           <Divider />
           <SettingsRow
@@ -83,7 +89,7 @@ export function SettingsScreen() {
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
           About
         </Text>
-        <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.lg, borderColor: colors.border, borderWidth: 1 }}>
+        <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1 }}>
           <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
           <Divider />
           <SettingsRow icon="shield-checkmark-outline" label="Privacy policy" onPress={() => {}} />
@@ -105,7 +111,6 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
   },
   avatar: {
     width: 48,

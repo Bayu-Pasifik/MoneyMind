@@ -35,7 +35,7 @@ export function AnalyticsScreen() {
         <View
           style={[
             styles.card,
-            { backgroundColor: colors.surface, borderRadius: radii.lg, borderColor: colors.border, padding: spacing.lg, marginBottom: spacing.lg },
+            { backgroundColor: colors.surface, borderRadius: radii.card, borderColor: colors.border, padding: spacing.lg, marginBottom: spacing.lg },
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
@@ -47,7 +47,7 @@ export function AnalyticsScreen() {
         <View
           style={[
             styles.card,
-            { backgroundColor: colors.surface, borderRadius: radii.lg, borderColor: colors.border, padding: spacing.lg },
+            { backgroundColor: colors.surface, borderRadius: radii.card, borderColor: colors.border, padding: spacing.lg },
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>

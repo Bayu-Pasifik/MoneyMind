@@ -11,13 +11,11 @@ type Props = {
 };
 
 export function BalanceHero({ balance, income, expense }: Props) {
-  const { colors, spacing, radii, typography, mode } = useTheme();
-  const gradientColors =
-    mode === 'dark' ? (['#2E3C8F', '#121632'] as const) : (['#5B7CFF', '#3D56D1'] as const);
+  const { colors, spacing, radii, typography } = useTheme();
 
   return (
     <LinearGradient
-      colors={gradientColors}
+      colors={[colors.primary, colors.primaryDark]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[styles.container, { borderRadius: radii.xl, padding: spacing.xl }]}

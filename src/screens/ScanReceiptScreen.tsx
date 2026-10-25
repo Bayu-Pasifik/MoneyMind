@@ -294,8 +294,8 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   galleryButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },

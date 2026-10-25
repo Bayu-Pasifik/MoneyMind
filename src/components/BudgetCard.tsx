@@ -18,7 +18,7 @@ export function BudgetCard({ spent, limit }: Props) {
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg, borderColor: colors.border },
+        { backgroundColor: colors.surface, borderRadius: radii.card, padding: spacing.lg, borderColor: colors.border },
       ]}
     >
       <View style={styles.header}>
@@ -46,7 +46,7 @@ export function BudgetCard({ spent, limit }: Props) {
         />
       </View>
       {isOverBudget ? (
-        <Text style={{ color: colors.danger, fontSize: typography.size.xs, marginTop: spacing.sm }}>
+        <Text style={{ color: colors.dangerText, fontSize: typography.size.xs, marginTop: spacing.sm }}>
           Over budget by {formatCurrency(spent - limit)}
         </Text>
       ) : (

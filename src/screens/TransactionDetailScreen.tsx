@@ -112,10 +112,10 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
           onPress={handleDelete}
           style={[
             styles.deleteButton,
-            { borderColor: colors.danger, borderRadius: radii.md, marginTop: spacing.xxl, padding: spacing.md },
+            { borderColor: colors.dangerText, borderRadius: radii.md, marginTop: spacing.xxl, padding: spacing.md },
           ]}
         >
-          <Text style={{ color: colors.danger, fontWeight: typography.weight.semibold }}>
+          <Text style={{ color: colors.dangerText, fontWeight: typography.weight.semibold }}>
             Delete transaction
           </Text>
         </Pressable>
