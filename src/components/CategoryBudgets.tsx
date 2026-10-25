@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { Transaction, TransactionCategory } from '../types/transaction';
 import { useBudgets } from '../store/BudgetsContext';
-import { BUDGET_STATUS_LABEL, getBudgetStatus } from '../utils/budgets';
+import { BUDGET_STATUS_LABEL, BUDGETABLE_CATEGORIES, getBudgetStatus } from '../utils/budgets';
 import { CATEGORY_LABEL } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
 
@@ -23,13 +23,12 @@ export function CategoryBudgets({ transactions, onManage }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const { budgets } = useBudgets();
 
-  const categories = Object.keys(budgets) as TransactionCategory[];
-  const rows = categories.map((category) => {
-    const limit = budgets[category] ?? 0;
+  const rows = BUDGETABLE_CATEGORIES.map((category: TransactionCategory) => {
+    const limit = budgets[category];
     const spent = transactions
       .filter((item) => item.type === 'expense' && item.category === category)
       .reduce((sum, item) => sum + item.amount, 0);
-    const status = getBudgetStatus(spent, limit);
+    const status = limit === undefined ? ('none' as const) : getBudgetStatus(spent, limit);
     return { category, limit, spent, status };
   });
 
@@ -54,50 +53,55 @@ export function CategoryBudgets({ transactions, onManage }: Props) {
         </Pressable>
       </View>
 
-      {rows.length === 0 ? (
-        <Pressable
-          onPress={onManage}
-          style={[styles.emptyRow, { marginTop: spacing.md }]}
-          accessibilityRole="button"
-          accessibilityLabel="Set a budget limit per category"
-        >
-          <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
-          <Text style={{ color: colors.primary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold, marginLeft: spacing.sm }}>
-            Set a budget limit per category
-          </Text>
-        </Pressable>
-      ) : (
-        rows.map((row, index) => {
-          const ratio = row.limit > 0 ? Math.min(row.spent / row.limit, 1) : 0;
-          const palette = STATUS_COLOR[row.status];
-          return (
-            <View key={row.category} style={{ marginTop: index === 0 ? spacing.md : spacing.md }}>
-              <View style={styles.rowHeader}>
-                <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-                  {CATEGORY_LABEL[row.category]}
-                </Text>
-                <View style={styles.rightGroup}>
-                  <View style={[styles.badge, { backgroundColor: palette.bg, borderRadius: radii.pill, marginRight: spacing.sm }]}>
-                    <Text style={{ color: palette.text, fontSize: 10, fontWeight: '600' }}>
-                      {BUDGET_STATUS_LABEL[row.status]}
-                    </Text>
-                  </View>
-                  <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>
-                    {formatCurrency(row.spent)} / {formatCurrency(row.limit)}
+      {rows.map((row, index) => {
+        const hasLimit = row.limit !== undefined;
+        const ratio = hasLimit && row.limit! > 0 ? Math.min(row.spent / row.limit!, 1) : 0;
+        const palette = hasLimit
+          ? STATUS_COLOR[row.status as 'ok' | 'warn' | 'over']
+          : { bg: colors.surfaceAlt, text: colors.textTertiary, bar: colors.border };
+
+        const Row = (
+          <View style={{ marginTop: index === 0 ? spacing.md : spacing.md }}>
+            <View style={styles.rowHeader}>
+              <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
+                {CATEGORY_LABEL[row.category]}
+              </Text>
+              <View style={styles.rightGroup}>
+                <View style={[styles.badge, { backgroundColor: palette.bg, borderRadius: radii.pill, marginRight: spacing.sm }]}>
+                  <Text style={{ color: palette.text, fontSize: 10, fontWeight: '600' }}>
+                    {BUDGET_STATUS_LABEL[row.status]}
                   </Text>
                 </View>
-              </View>
-              <View
-                accessibilityRole="progressbar"
-                accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100) }}
-                style={[styles.track, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill, marginTop: spacing.xs }]}
-              >
-                <View style={[styles.fill, { width: `${ratio * 100}%`, backgroundColor: palette.bar, borderRadius: radii.pill }]} />
+                <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>
+                  {hasLimit ? `${formatCurrency(row.spent)} / ${formatCurrency(row.limit!)}` : formatCurrency(row.spent)}
+                </Text>
               </View>
             </View>
-          );
-        })
-      )}
+            <View
+              accessibilityRole="progressbar"
+              accessibilityValue={{ min: 0, max: 100, now: hasLimit ? Math.round(ratio * 100) : 0 }}
+              style={[styles.track, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill, marginTop: spacing.xs }]}
+            >
+              {hasLimit ? (
+                <View style={[styles.fill, { width: `${ratio * 100}%`, backgroundColor: palette.bar, borderRadius: radii.pill }]} />
+              ) : null}
+            </View>
+          </View>
+        );
+
+        return hasLimit ? (
+          <View key={row.category}>{Row}</View>
+        ) : (
+          <Pressable
+            key={row.category}
+            accessibilityRole="button"
+            accessibilityLabel={`Set a budget limit for ${CATEGORY_LABEL[row.category]}`}
+            onPress={onManage}
+          >
+            {Row}
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -110,10 +114,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  emptyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   rowHeader: {
     flexDirection: 'row',

@@ -7,17 +7,8 @@ import { useBudgets } from '../store/BudgetsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { CATEGORY_LABEL } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
+import { BUDGETABLE_CATEGORIES } from '../utils/budgets';
 import { TransactionCategory } from '../types/transaction';
-
-const BUDGETABLE_CATEGORIES: TransactionCategory[] = [
-  'food',
-  'transport',
-  'shopping',
-  'bills',
-  'health',
-  'entertainment',
-  'other',
-];
 
 export function BudgetSettingsScreen() {
   const { colors, spacing, radii, typography } = useTheme();
