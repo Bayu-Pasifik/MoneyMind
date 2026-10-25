@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { TransactionsProvider, useTransactions } from '../store/TransactionsContext';
 import { NotificationCaptureProvider } from '../store/NotificationCaptureContext';
 import { TelegramProvider } from '../store/TelegramContext';
+import { BudgetsProvider } from '../store/BudgetsContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -13,6 +14,7 @@ import { ScanReceiptScreen } from '../screens/ScanReceiptScreen';
 import { ExportSheetScreen } from '../screens/ExportSheetScreen';
 import { AddTransactionScreen } from '../screens/AddTransactionScreen';
 import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
+import { BudgetSettingsScreen } from '../screens/BudgetSettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +51,7 @@ export function RootNavigator() {
   return (
     <TransactionsProvider>
       <DatabaseGate>
+      <BudgetsProvider>
       <NotificationCaptureProvider>
       <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
@@ -94,10 +97,19 @@ export function RootNavigator() {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              name="BudgetSettings"
+              component={BudgetSettingsScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </TelegramProvider>
       </NotificationCaptureProvider>
+      </BudgetsProvider>
       </DatabaseGate>
     </TransactionsProvider>
   );

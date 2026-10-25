@@ -109,7 +109,10 @@ export function HomeScreen() {
               <QuickActions actions={quickActions} />
             </View>
             <View style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
-              <CategoryBudgets transactions={transactions} />
+              <CategoryBudgets
+                transactions={transactions}
+                onManage={() => navigation.navigate('BudgetSettings')}
+              />
             </View>
             <View style={{ marginBottom: spacing.lg }}>
               <AiInsightCard

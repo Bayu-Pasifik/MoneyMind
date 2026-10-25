@@ -15,4 +15,5 @@ export type RootStackParamList = {
   ExportSheet: undefined;
   AddTransaction: { transactionId?: string } | undefined;
   CategoryPicker: { transactionId: string };
+  BudgetSettings: undefined;
 };

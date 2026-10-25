@@ -134,6 +134,12 @@ export function SettingsScreen() {
           <SettingsRow icon="cash-outline" label="Currency" value="IDR" />
           <Divider />
           <SettingsRow
+            icon="pie-chart-outline"
+            label="Budget limits"
+            onPress={() => navigation.navigate('BudgetSettings')}
+          />
+          <Divider />
+          <SettingsRow
             icon="download-outline"
             label="Export transactions"
             onPress={() => navigation.navigate('ExportSheet')}

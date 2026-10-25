@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { Transaction } from '../types/transaction';
+import { Transaction, TransactionCategory } from '../types/transaction';
 
 const DB_NAME = 'moneymind.db';
 
@@ -27,6 +27,12 @@ export async function initDatabase(): Promise<void> {
       receiptImageUri TEXT,
       accountName TEXT,
       source TEXT NOT NULL
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS budgets (
+      category TEXT PRIMARY KEY NOT NULL,
+      monthlyLimit REAL NOT NULL
     );
   `);
 }
@@ -136,4 +142,43 @@ export async function updateTransactionInDb(transaction: Transaction): Promise<v
       $accountName: transaction.accountName ?? null,
     }
   );
+}
+
+type BudgetRow = {
+  category: TransactionCategory;
+  monthlyLimit: number;
+};
+
+export async function getAllBudgets(): Promise<Record<string, number>> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<BudgetRow>('SELECT * FROM budgets;');
+  const budgets: Record<string, number> = {};
+  for (const row of rows) {
+    budgets[row.category] = row.monthlyLimit;
+  }
+  return budgets;
+}
+
+export async function insertBudgetsIfEmpty(seed: Partial<Record<TransactionCategory, number>>): Promise<void> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM budgets;');
+  if ((row?.count ?? 0) > 0) return;
+  for (const [category, limit] of Object.entries(seed)) {
+    if (limit === undefined) continue;
+    await setBudgetLimit(category as TransactionCategory, limit);
+  }
+}
+
+export async function setBudgetLimit(category: TransactionCategory, limit: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO budgets (category, monthlyLimit) VALUES ($category, $limit)
+     ON CONFLICT(category) DO UPDATE SET monthlyLimit = $limit;`,
+    { $category: category, $limit: limit }
+  );
+}
+
+export async function deleteBudget(category: TransactionCategory): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM budgets WHERE category = $category;', { $category: category });
 }
