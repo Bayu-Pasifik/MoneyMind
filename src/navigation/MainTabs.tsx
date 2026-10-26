@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { TabIcon } from '../components/TabIcon';
 import { MainTabsParamList } from './types';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -22,6 +23,15 @@ const TAB_ICON: Record<keyof MainTabsParamList, keyof typeof Ionicons.glyphMap> 
 
 export function MainTabs() {
   const { colors } = useTheme();
+  const { t } = useLocale();
+
+  const TAB_LABEL: Record<keyof MainTabsParamList, string> = {
+    Home: t('tabs.home'),
+    Transactions: t('tabs.transactions'),
+    Analytics: t('tabs.analytics'),
+    Chat: t('tabs.chat'),
+    Settings: t('tabs.settings'),
+  };
 
   return (
     <Tab.Navigator
@@ -29,6 +39,7 @@ export function MainTabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
+        tabBarLabel: TAB_LABEL[route.name as keyof MainTabsParamList],
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,

@@ -2,7 +2,8 @@ import React from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { CategoryBreakdown } from '../utils/analytics';
-import { CATEGORY_CHART_COLORS, CATEGORY_LABEL } from '../utils/categories';
+import { CATEGORY_CHART_COLORS, getCategoryLabel } from '../utils/categories';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   data: CategoryBreakdown[];
@@ -11,12 +12,13 @@ type Props = {
 };
 
 export function DonutChart({ data, size = 180, strokeWidth = 22 }: Props) {
+  const { t } = useLocale();
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   let offsetSoFar = 0;
 
   const summary = data
-    .map((slice) => `${CATEGORY_LABEL[slice.category]} ${Math.round(slice.ratio * 100)} percent`)
+    .map((slice) => `${getCategoryLabel(t, slice.category)} ${Math.round(slice.ratio * 100)} percent`)
     .join(', ');
 
   return (

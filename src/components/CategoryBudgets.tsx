@@ -4,9 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { Transaction, TransactionCategory } from '../types/transaction';
 import { useBudgets } from '../store/BudgetsContext';
-import { BUDGET_STATUS_LABEL, BUDGETABLE_CATEGORIES, getBudgetStatus } from '../utils/budgets';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { BUDGETABLE_CATEGORIES, getBudgetStatus, getBudgetStatusLabel } from '../utils/budgets';
+import { getCategoryLabel } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   transactions: Transaction[];
@@ -21,6 +22,7 @@ const STATUS_COLOR = {
 
 export function CategoryBudgets({ transactions, onManage }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const { budgets } = useBudgets();
 
   const rows = BUDGETABLE_CATEGORIES.map((category: TransactionCategory) => {
@@ -41,11 +43,11 @@ export function CategoryBudgets({ transactions, onManage }: Props) {
     >
       <View style={styles.header}>
         <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
-          Category budgets
+          {t('budgets.title')}
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Manage budget limits"
+          accessibilityLabel={t('budgets.manage')}
           hitSlop={8}
           onPress={onManage}
         >
@@ -64,12 +66,12 @@ export function CategoryBudgets({ transactions, onManage }: Props) {
           <View style={{ marginTop: index === 0 ? spacing.md : spacing.md }}>
             <View style={styles.rowHeader}>
               <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-                {CATEGORY_LABEL[row.category]}
+                {getCategoryLabel(t, row.category)}
               </Text>
               <View style={styles.rightGroup}>
                 <View style={[styles.badge, { backgroundColor: palette.bg, borderRadius: radii.pill, marginRight: spacing.sm }]}>
                   <Text style={{ color: palette.text, fontSize: 10, fontWeight: '600' }}>
-                    {BUDGET_STATUS_LABEL[row.status]}
+                    {getBudgetStatusLabel(t, row.status)}
                   </Text>
                 </View>
                 <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>
@@ -95,7 +97,7 @@ export function CategoryBudgets({ transactions, onManage }: Props) {
           <Pressable
             key={row.category}
             accessibilityRole="button"
-            accessibilityLabel={`Set a budget limit for ${CATEGORY_LABEL[row.category]}`}
+            accessibilityLabel={t('budgets.setFor', { category: getCategoryLabel(t, row.category) })}
             onPress={onManage}
           >
             {Row}

@@ -6,25 +6,16 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
 import { formatCurrency, formatDateTime } from '../utils/format';
+import { getCategoryLabel } from '../utils/categories';
 import { RootStackParamList } from '../navigation/types';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TransactionDetail'>;
 
-const CATEGORY_LABEL: Record<string, string> = {
-  food: 'Food & Drink',
-  transport: 'Transport',
-  shopping: 'Shopping',
-  bills: 'Bills',
-  health: 'Health',
-  entertainment: 'Entertainment',
-  salary: 'Salary',
-  transfer: 'Transfer',
-  other: 'Other',
-};
-
 export function TransactionDetailScreen({ route, navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { getById, removeTransaction } = useTransactions();
   const announce = useAnnounce();
   const transaction = getById(route.params.transactionId);
@@ -33,7 +24,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={{ color: colors.textSecondary, padding: spacing.lg }}>
-          This transaction is no longer available.
+          {t('detail.unavailable')}
         </Text>
       </SafeAreaView>
     );
@@ -44,7 +35,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
 
   const handleDelete = () => {
     removeTransaction(transaction.id);
-    announce('Transaction deleted');
+    announce(t('detail.deleted'));
     navigation.goBack();
   };
 
@@ -55,7 +46,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
         <View style={styles.headerRow}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Close"
+            accessibilityLabel={t('detail.close')}
             hitSlop={8}
             onPress={() => navigation.goBack()}
             style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
@@ -64,7 +55,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Edit transaction"
+            accessibilityLabel={t('detail.edit')}
             hitSlop={8}
             onPress={() => navigation.navigate('AddTransaction', { transactionId: transaction.id })}
             style={[styles.closeButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
@@ -80,7 +71,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
             marginTop: spacing.lg,
           }}
         >
-          {CATEGORY_LABEL[transaction.category]} · {transaction.accountName}
+          {getCategoryLabel(t, transaction.category)} · {transaction.accountName}
         </Text>
         <Text
           accessibilityRole="header"
@@ -105,12 +96,12 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
           {formatCurrency(transaction.amount)}
         </Text>
         <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm, marginTop: spacing.xs }}>
-          {formatDateTime(transaction.date)}
+          {formatDateTime(transaction.date, locale)}
         </Text>
 
         {transaction.note ? (
           <View style={[styles.section, { borderTopColor: colors.border, marginTop: spacing.xl, paddingTop: spacing.lg }]}>
-            <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm }}>Note</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm }}>{t('detail.note')}</Text>
             <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, marginTop: spacing.xs }}>
               {transaction.note}
             </Text>
@@ -119,7 +110,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Delete transaction"
+          accessibilityLabel={t('detail.delete')}
           onPress={handleDelete}
           style={[
             styles.deleteButton,
@@ -127,7 +118,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
           ]}
         >
           <Text style={{ color: colors.dangerText, fontWeight: typography.weight.semibold }}>
-            Delete transaction
+            {t('detail.delete')}
           </Text>
         </Pressable>
       </ScrollView>

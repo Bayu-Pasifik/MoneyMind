@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   count: number;
@@ -10,11 +11,13 @@ type Props = {
 
 export function NotifCaptureBanner({ count, onPress }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
+  const title = t(count === 1 ? 'notifBanner.titleOne' : 'notifBanner.titleOther', { count });
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Auto-captured ${count} transaction${count === 1 ? '' : 's'}`}
+      accessibilityLabel={title}
       onPress={onPress}
       style={[
         styles.container,
@@ -26,9 +29,9 @@ export function NotifCaptureBanner({ count, onPress }: Props) {
       </View>
       <View style={styles.textWrap}>
         <Text style={{ color: colors.textPrimary, fontSize: typography.size.xs, fontWeight: typography.weight.bold }}>
-          Auto-captured {count} transaction{count === 1 ? '' : 's'}
+          {title}
         </Text>
-        <Text style={{ color: colors.textSecondary, fontSize: 11 }}>From your payment notifications today</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{t('notifBanner.subtitle')}</Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
     </Pressable>

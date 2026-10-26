@@ -8,21 +8,21 @@ import { useTransactions } from '../store/TransactionsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { TransactionCategory } from '../types/transaction';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { ALL_CATEGORIES, getCategoryLabel } from '../utils/categories';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategoryPicker'>;
 
-const ALL_CATEGORIES = Object.keys(CATEGORY_LABEL) as TransactionCategory[];
-
 export function CategoryPickerScreen({ route, navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const { getById, updateTransactionCategory } = useTransactions();
   const announce = useAnnounce();
   const transaction = getById(route.params.transactionId);
 
   const handleSelect = (category: TransactionCategory) => {
     updateTransactionCategory(route.params.transactionId, category);
-    announce(`Tagged as ${CATEGORY_LABEL[category]}`);
+    announce(t('categoryPicker.taggedAs', { category: getCategoryLabel(t, category) }));
     navigation.goBack();
   };
 
@@ -34,7 +34,7 @@ export function CategoryPickerScreen({ route, navigation }: Props) {
           accessibilityRole="header"
           style={{ color: colors.textPrimary, fontSize: typography.size.xl, fontWeight: typography.weight.bold, marginBottom: spacing.xs }}
         >
-          Tag transaction
+          {t('categoryPicker.title')}
         </Text>
         {transaction ? (
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.lg }}>
@@ -47,7 +47,7 @@ export function CategoryPickerScreen({ route, navigation }: Props) {
             <Pressable
               key={category}
               accessibilityRole="button"
-              accessibilityLabel={CATEGORY_LABEL[category]}
+              accessibilityLabel={getCategoryLabel(t, category)}
               onPress={() => handleSelect(category)}
               style={[
                 styles.item,
@@ -58,7 +58,7 @@ export function CategoryPickerScreen({ route, navigation }: Props) {
                 <Ionicons name="pricetag-outline" size={18} color={colors.primary} />
               </View>
               <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-                {CATEGORY_LABEL[category]}
+                {getCategoryLabel(t, category)}
               </Text>
             </Pressable>
           ))}

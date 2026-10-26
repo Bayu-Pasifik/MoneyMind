@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { PeriodSummary } from '../utils/period';
 import { formatCurrency } from '../utils/format';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   summary: PeriodSummary;
@@ -10,45 +11,47 @@ type Props = {
 
 function DeltaLabel({ delta, positiveIsGood }: { delta: number | null; positiveIsGood: boolean }) {
   const { colors, typography } = useTheme();
+  const { t } = useLocale();
   if (delta === null) return null;
   const isGood = positiveIsGood ? delta >= 0 : delta <= 0;
   const color = isGood ? colors.successText : colors.dangerText;
   const sign = delta >= 0 ? '+' : '';
   return (
     <Text style={{ color, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
-      {sign}
-      {delta.toFixed(0)}% vs last period
+      {t('summary.vsLastPeriod', { sign, delta: delta.toFixed(0) })}
     </Text>
   );
 }
 
 function SavingRateLabel({ summary }: { summary: PeriodSummary }) {
   const { colors, typography } = useTheme();
+  const { t } = useLocale();
   if (summary.income <= 0) return null;
   const rate = Math.round((summary.saved / summary.income) * 100);
   const color = rate >= 0 ? colors.successText : colors.dangerText;
   return (
     <Text style={{ color, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
-      Saving rate {rate}%
+      {t('summary.savingRate', { rate })}
     </Text>
   );
 }
 
 export function SummaryCards({ summary }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
 
   const items = [
-    { label: 'Spent', value: summary.spent, delta: summary.spentDelta, positiveIsGood: false },
-    { label: 'Income', value: summary.income, delta: summary.incomeDelta, positiveIsGood: true },
-    { label: 'Saved', value: summary.saved, delta: null, positiveIsGood: true, showRate: true },
-    { label: 'Transactions', value: summary.count, delta: null, positiveIsGood: true, isCount: true },
+    { key: 'spent', label: t('summary.spent'), value: summary.spent, delta: summary.spentDelta, positiveIsGood: false },
+    { key: 'income', label: t('summary.income'), value: summary.income, delta: summary.incomeDelta, positiveIsGood: true },
+    { key: 'saved', label: t('summary.saved'), value: summary.saved, delta: null, positiveIsGood: true, showRate: true },
+    { key: 'count', label: t('summary.transactions'), value: summary.count, delta: null, positiveIsGood: true, isCount: true },
   ];
 
   return (
     <View style={styles.grid}>
       {items.map((item) => (
         <View
-          key={item.label}
+          key={item.key}
           style={[
             styles.card,
             { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.card, padding: spacing.md },

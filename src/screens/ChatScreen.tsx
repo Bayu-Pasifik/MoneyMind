@@ -18,6 +18,7 @@ import { ChatBubble } from '../components/ChatBubble';
 import { TelegramConnectBanner } from '../components/TelegramConnectBanner';
 import { generateAssistantReply, parseAddCommand } from '../utils/chatBot';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Message = {
   id: string;
@@ -25,22 +26,24 @@ type Message = {
   text: string;
 };
 
-const SUGGESTIONS = ['How much did I spend?', 'What is my balance?', 'Top category?'];
 const SLASH_COMMANDS = ['/summary', '/balance', '/add expense 20000 food Lunch', '/budget', '/report'];
 
 export function ChatScreen() {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const { transactions, addTransaction } = useTransactions();
   const { connected } = useTelegram();
   const announce = useAnnounce();
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      text: "Hi! I'm your MoneyMind assistant. Ask me about your balance, spending, or budget.",
-    },
+    { id: 'welcome', role: 'assistant', text: t('chat.welcome') },
   ]);
   const [draft, setDraft] = useState('');
+
+  const suggestions = [
+    t('chat.suggestion.spend'),
+    t('chat.suggestion.balance'),
+    t('chat.suggestion.topCategory'),
+  ];
 
   const sendMessage = (text: string, role: 'user' | 'telegram' = 'user') => {
     const trimmed = text.trim();
@@ -48,8 +51,8 @@ export function ChatScreen() {
 
     const userMessage: Message = { id: `u-${Date.now()}`, role, text: trimmed };
 
-    const addCommand = parseAddCommand(trimmed);
-    const reply = addCommand ? addCommand.reply : generateAssistantReply(trimmed, transactions);
+    const addCommand = parseAddCommand(trimmed, t);
+    const reply = addCommand ? addCommand.reply : generateAssistantReply(trimmed, transactions, t);
     if (addCommand?.transaction) {
       addTransaction(addCommand.transaction);
     }
@@ -74,7 +77,7 @@ export function ChatScreen() {
           paddingBottom: spacing.sm,
         }}
       >
-        AI Chat
+        {t('chat.title')}
       </Text>
 
       <TelegramConnectBanner />
@@ -111,7 +114,7 @@ export function ChatScreen() {
         ) : null}
 
         <View style={[styles.suggestionsRow, { paddingHorizontal: spacing.lg, marginBottom: spacing.sm }]}>
-          {SUGGESTIONS.map((suggestion) => (
+          {suggestions.map((suggestion) => (
             <Pressable
               key={suggestion}
               accessibilityRole="button"
@@ -135,9 +138,9 @@ export function ChatScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="Ask about your money…"
+            placeholder={t('chat.inputPlaceholder')}
             placeholderTextColor={colors.textTertiary}
-            accessibilityLabel="Message"
+            accessibilityLabel={t('chat.inputPlaceholder')}
             onSubmitEditing={() => sendMessage(draft)}
             style={[
               styles.input,
@@ -146,7 +149,7 @@ export function ChatScreen() {
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Send message"
+            accessibilityLabel={t('chat.send')}
             onPress={() => sendMessage(draft)}
             style={[styles.sendButton, { backgroundColor: colors.primary, borderRadius: radii.pill, marginLeft: spacing.sm }]}
           >

@@ -5,13 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useBudgets } from '../store/BudgetsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { getCategoryLabel } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
 import { BUDGETABLE_CATEGORIES } from '../utils/budgets';
 import { TransactionCategory } from '../types/transaction';
+import { useLocale } from '../i18n/LocaleContext';
 
 export function BudgetSettingsScreen() {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const { budgets, setLimit, removeLimit } = useBudgets();
   const announce = useAnnounce();
 
@@ -32,12 +34,12 @@ export function BudgetSettingsScreen() {
     const trimmed = draft.trim();
     if (trimmed === '') {
       removeLimit(category);
-      announce(`${CATEGORY_LABEL[category]} budget removed`);
+      announce(t('budgetSettings.removedAnnounce', { category: getCategoryLabel(t, category) }));
     } else {
       const parsed = Number(trimmed);
       if (Number.isFinite(parsed) && parsed > 0) {
         setLimit(category, parsed);
-        announce(`${CATEGORY_LABEL[category]} budget set to ${formatCurrency(parsed)}`);
+        announce(t('budgetSettings.setAnnounce', { category: getCategoryLabel(t, category), amount: formatCurrency(parsed) }));
       }
     }
     setDrafts((prev) => {
@@ -60,10 +62,10 @@ export function BudgetSettingsScreen() {
             marginBottom: spacing.xs,
           }}
         >
-          Budget limits
+          {t('budgetSettings.title')}
         </Text>
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.lg }}>
-          Set a monthly spending limit per category. Leave blank to remove tracking.
+          {t('budgetSettings.subtitle')}
         </Text>
 
         <View
@@ -86,7 +88,7 @@ export function BudgetSettingsScreen() {
               ]}
             >
               <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold, flex: 1 }}>
-                {CATEGORY_LABEL[category]}
+                {getCategoryLabel(t, category)}
               </Text>
               <View
                 style={[
@@ -99,8 +101,8 @@ export function BudgetSettingsScreen() {
                   value={getDisplayValue(category)}
                   onChangeText={(text) => handleChange(category, text)}
                   onBlur={() => handleBlur(category)}
-                  accessibilityLabel={`${CATEGORY_LABEL[category]} monthly limit`}
-                  placeholder="No limit"
+                  accessibilityLabel={t('budgetSettings.monthlyLimitFor', { category: getCategoryLabel(t, category) })}
+                  placeholder={t('budgetSettings.noLimit')}
                   placeholderTextColor={colors.textTertiary}
                   keyboardType="numeric"
                   style={{ color: colors.textPrimary, fontSize: typography.size.sm, paddingVertical: spacing.sm, minWidth: 90, textAlign: 'right' }}
@@ -109,11 +111,11 @@ export function BudgetSettingsScreen() {
               {budgets[category] !== undefined ? (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Remove ${CATEGORY_LABEL[category]} budget`}
+                  accessibilityLabel={t('budgetSettings.removeFor', { category: getCategoryLabel(t, category) })}
                   hitSlop={8}
                   onPress={() => {
                     removeLimit(category);
-                    announce(`${CATEGORY_LABEL[category]} budget removed`);
+                    announce(t('budgetSettings.removedAnnounce', { category: getCategoryLabel(t, category) }));
                   }}
                   style={{ marginLeft: spacing.sm }}
                 >

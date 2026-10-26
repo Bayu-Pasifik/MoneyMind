@@ -3,9 +3,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useTelegram } from '../store/TelegramContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 export function TelegramConnectBanner() {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const { connected, username, botUsername, connect, disconnect } = useTelegram();
 
   return (
@@ -20,19 +22,19 @@ export function TelegramConnectBanner() {
       </View>
       <View style={styles.textWrap}>
         <Text style={{ color: colors.textPrimary, fontSize: typography.size.xs, fontWeight: typography.weight.bold }}>
-          {connected ? `Telegram connected` : 'Connect Telegram'}
+          {connected ? t('telegramBanner.connectedTitle') : t('telegramBanner.disconnectedTitle')}
         </Text>
         <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
-          {connected ? `${username} · ${botUsername}` : 'Chat with MoneyMind from Telegram too'}
+          {connected ? `${username} · ${botUsername}` : t('telegramBanner.disconnectedSubtitle')}
         </Text>
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={connected ? 'Disconnect Telegram' : 'Connect Telegram'}
+        accessibilityLabel={connected ? t('telegramBanner.disconnect') : t('telegramBanner.connect')}
         onPress={connected ? disconnect : connect}
         style={[styles.button, { backgroundColor: colors.telegram, borderRadius: radii.sm, paddingHorizontal: spacing.sm }]}
       >
-        <Text style={styles.buttonLabel}>{connected ? 'Disconnect' : 'Connect'}</Text>
+        <Text style={styles.buttonLabel}>{connected ? t('telegramBanner.disconnect') : t('telegramBanner.connect')}</Text>
       </Pressable>
     </View>
   );

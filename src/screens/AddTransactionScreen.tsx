@@ -7,9 +7,10 @@ import { useTransactions } from '../store/TransactionsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction, TransactionCategory, TransactionType } from '../types/transaction';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { getCategoryLabel } from '../utils/categories';
 import { formatDate } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddTransaction'>;
 
@@ -26,6 +27,7 @@ const INCOME_CATEGORIES: TransactionCategory[] = ['salary', 'transfer', 'other']
 
 export function AddTransactionScreen({ navigation, route }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { addTransaction, updateTransaction, getById } = useTransactions();
   const announce = useAnnounce();
 
@@ -54,12 +56,12 @@ export function AddTransactionScreen({ navigation, route }: Props) {
   const handleSave = () => {
     const parsedAmount = Number(amount);
     if (!title.trim() || !parsedAmount || parsedAmount <= 0) {
-      announce('Enter a title and a valid amount before saving');
+      announce(t('addTransaction.validationMissing'));
       return;
     }
     const date = fromDateInputValue(dateText);
     if (!date) {
-      announce('Enter the date as YYYY-MM-DD');
+      announce(t('addTransaction.validationDate'));
       return;
     }
 
@@ -73,7 +75,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         date,
       };
       updateTransaction(updated);
-      announce('Transaction updated');
+      announce(t('addTransaction.updated'));
     } else {
       const transaction: Transaction = {
         id: `manual-${Date.now()}`,
@@ -86,7 +88,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         source: 'manual',
       };
       addTransaction(transaction);
-      announce(`${type === 'income' ? 'Income' : 'Expense'} added`);
+      announce(t(type === 'income' ? 'addTransaction.incomeAdded' : 'addTransaction.expenseAdded'));
     }
     navigation.goBack();
   };
@@ -104,7 +106,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
             marginBottom: spacing.lg,
           }}
         >
-          {isEditing ? 'Edit transaction' : 'Add transaction'}
+          {isEditing ? t('addTransaction.editTitle') : t('addTransaction.addTitle')}
         </Text>
 
         <View style={[styles.typeRow, { marginBottom: spacing.lg }]}>
@@ -129,7 +131,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
                 ]}
               >
                 <Text style={{ color: selected ? colors.primaryText : colors.textPrimary, fontWeight: typography.weight.semibold }}>
-                  {option === 'expense' ? 'Expense' : 'Income'}
+                  {option === 'expense' ? t('addTransaction.expense') : t('addTransaction.income')}
                 </Text>
               </Pressable>
             );
@@ -137,13 +139,13 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         </View>
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
-          Title
+          {t('addTransaction.titleLabel')}
         </Text>
         <TextInput
           value={title}
           onChangeText={setTitle}
-          accessibilityLabel="Title"
-          placeholder="e.g. Lunch with friends"
+          accessibilityLabel={t('addTransaction.titleLabel')}
+          placeholder={t('addTransaction.titlePlaceholder')}
           placeholderTextColor={colors.textTertiary}
           style={[
             styles.input,
@@ -152,12 +154,12 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         />
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
-          Amount
+          {t('addTransaction.amountLabel')}
         </Text>
         <TextInput
           value={amount}
           onChangeText={setAmount}
-          accessibilityLabel="Amount"
+          accessibilityLabel={t('addTransaction.amountLabel')}
           placeholder="0"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
@@ -168,12 +170,12 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         />
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
-          Date (YYYY-MM-DD)
+          {t('addTransaction.dateLabel')}
         </Text>
         <TextInput
           value={dateText}
           onChangeText={setDateText}
-          accessibilityLabel="Date"
+          accessibilityLabel={t('addTransaction.dateLabel')}
           placeholder={toDateInputValue(new Date().toISOString())}
           placeholderTextColor={colors.textTertiary}
           style={[
@@ -183,16 +185,16 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         />
         {fromDateInputValue(dateText) ? (
           <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
-            {formatDate(fromDateInputValue(dateText)!)}
+            {formatDate(fromDateInputValue(dateText)!, locale)}
           </Text>
         ) : (
           <Text style={{ color: colors.dangerText, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
-            Use the format YYYY-MM-DD, e.g. {toDateInputValue(new Date().toISOString())}
+            {t('addTransaction.dateInvalid', { example: toDateInputValue(new Date().toISOString()) })}
           </Text>
         )}
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
-          Category
+          {t('addTransaction.categoryLabel')}
         </Text>
         <View style={[styles.categoryWrap, { marginBottom: spacing.xxl }]}>
           {categories.map((option) => {
@@ -215,7 +217,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
                 ]}
               >
                 <Text style={{ color: selected ? colors.primary : colors.textSecondary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-                  {CATEGORY_LABEL[option]}
+                  {getCategoryLabel(t, option)}
                 </Text>
               </Pressable>
             );
@@ -228,7 +230,9 @@ export function AddTransactionScreen({ navigation, route }: Props) {
           style={[styles.saveButton, { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md }]}
         >
           <Text style={{ color: colors.primaryText, fontWeight: typography.weight.semibold }}>
-            {isEditing ? 'Save changes' : `Save ${type === 'income' ? 'income' : 'expense'}`}
+            {isEditing
+              ? t('addTransaction.saveChanges')
+              : t(type === 'income' ? 'addTransaction.saveIncome' : 'addTransaction.saveExpense')}
           </Text>
         </Pressable>
       </ScrollView>

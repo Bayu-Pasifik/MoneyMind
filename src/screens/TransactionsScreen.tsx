@@ -13,26 +13,28 @@ import { RootStackParamList } from '../navigation/types';
 import { groupTransactionsByDay } from '../utils/groupTransactions';
 import { Transaction } from '../types/transaction';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { useLocale } from '../i18n/LocaleContext';
 
 type FilterKey = 'all' | 'income' | 'expense' | 'food' | 'transport' | 'shopping' | 'auto';
 
-const FILTERS: FilterOption<FilterKey>[] = [
-  { key: 'all', label: 'All' },
-  { key: 'income', label: 'Income' },
-  { key: 'expense', label: 'Expenses' },
-  { key: 'food', label: 'Food' },
-  { key: 'transport', label: 'Transport' },
-  { key: 'shopping', label: 'Shopping' },
-  { key: 'auto', label: 'Auto-captured' },
-];
-
 export function TransactionsScreen() {
   const { colors, spacing, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { transactions, removeTransaction } = useTransactions();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const announce = useAnnounce();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterKey>('all');
+
+  const FILTERS: FilterOption<FilterKey>[] = [
+    { key: 'all', label: t('filter.all') },
+    { key: 'income', label: t('filter.income') },
+    { key: 'expense', label: t('filter.expenses') },
+    { key: 'food', label: t('filter.food') },
+    { key: 'transport', label: t('filter.transport') },
+    { key: 'shopping', label: t('filter.shopping') },
+    { key: 'auto', label: t('filter.auto') },
+  ];
 
   const filtered = useMemo(() => {
     return transactions.filter((item) => {
@@ -52,7 +54,7 @@ export function TransactionsScreen() {
     });
   }, [transactions, query, filter]);
 
-  const sections = useMemo(() => groupTransactionsByDay(filtered), [filtered]);
+  const sections = useMemo(() => groupTransactionsByDay(filtered, t, locale), [filtered, t, locale]);
 
   const handlePress = (transaction: Transaction) => {
     navigation.navigate('TransactionDetail', { transactionId: transaction.id });
@@ -60,7 +62,7 @@ export function TransactionsScreen() {
 
   const handleDelete = (transaction: Transaction) => {
     removeTransaction(transaction.id);
-    announce(`Deleted ${transaction.title}`);
+    announce(t('transactions.deleted', { title: transaction.title }));
   };
 
   const handleCategorize = (transaction: Transaction) => {
@@ -83,11 +85,11 @@ export function TransactionsScreen() {
             fontWeight: typography.weight.bold,
           }}
         >
-          Transactions
+          {t('transactions.title')}
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Scan a receipt"
+          accessibilityLabel={t('transactions.scanReceipt')}
           onPress={() => navigation.navigate('ScanReceipt')}
           style={[styles.scanButton, { backgroundColor: colors.primary }]}
         >
@@ -95,17 +97,17 @@ export function TransactionsScreen() {
         </Pressable>
       </View>
 
-      <SearchBar value={query} onChangeText={setQuery} />
+      <SearchBar value={query} onChangeText={setQuery} placeholder={t('transactions.searchPlaceholder')} />
       <FilterChips options={FILTERS} value={filter} onChange={setFilter} />
 
       {filtered.length === 0 ? (
         <EmptyState
           icon="receipt-outline"
-          title={transactions.length === 0 ? 'No transactions yet' : 'No matches'}
+          title={transactions.length === 0 ? t('transactions.noneYetTitle') : t('transactions.noMatchesTitle')}
           description={
             transactions.length === 0
-              ? 'Add your first income or expense, or scan a receipt, to see it here.'
-              : 'Try a different search term or filter.'
+              ? t('transactions.noneYetDescription')
+              : t('transactions.noMatchesDescription')
           }
         />
       ) : (

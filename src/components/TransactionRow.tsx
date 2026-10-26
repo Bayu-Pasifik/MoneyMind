@@ -5,6 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { Transaction } from '../types/transaction';
 import { formatCurrency, formatDate } from '../utils/format';
 import { SourcePill } from './SourcePill';
+import { useLocale } from '../i18n/LocaleContext';
 
 const CATEGORY_ICON: Record<Transaction['category'], keyof typeof Ionicons.glyphMap> = {
   food: 'restaurant-outline',
@@ -25,6 +26,7 @@ type Props = {
 
 export function TransactionRow({ transaction, onPress }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { locale } = useLocale();
   const isIncome = transaction.type === 'income';
   const sign = isIncome ? '+' : '-';
   const amountColor = isIncome ? colors.income : colors.expense;
@@ -62,7 +64,7 @@ export function TransactionRow({ transaction, onPress }: Props) {
         </Text>
         <View style={styles.metaRow}>
           <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm, marginRight: spacing.xs }}>
-            {formatDate(transaction.date)}
+            {formatDate(transaction.date, locale)}
           </Text>
           <SourcePill source={transaction.source} />
         </View>

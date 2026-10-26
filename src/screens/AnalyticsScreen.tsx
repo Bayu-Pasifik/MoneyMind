@@ -11,14 +11,17 @@ import { EmptyState } from '../components/EmptyState';
 import { PeriodTabs } from '../components/PeriodTabs';
 import { SummaryCards } from '../components/SummaryCards';
 import { TopMerchants } from '../components/TopMerchants';
-import { getCategoryBreakdown, getTrendTotals, TREND_CHART_TITLE } from '../utils/analytics';
-import { CATEGORY_CHART_COLORS, CATEGORY_LABEL } from '../utils/categories';
+import { getCategoryBreakdown, getTrendChartTitle, getTrendTotals } from '../utils/analytics';
+import { CATEGORY_CHART_COLORS } from '../utils/categories';
+import { getCategoryLabel } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
 import { filterByPeriod, filterByPreviousPeriod, getTopMerchants, Period, summarizePeriod } from '../utils/period';
 import { RootStackParamList } from '../navigation/types';
+import { useLocale } from '../i18n/LocaleContext';
 
 export function AnalyticsScreen() {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { transactions } = useTransactions();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [period, setPeriod] = useState<Period>('month');
@@ -35,7 +38,7 @@ export function AnalyticsScreen() {
   const topMerchants = useMemo(() => getTopMerchants(periodTransactions), [periodTransactions]);
 
   const breakdown = useMemo(() => getCategoryBreakdown(periodTransactions), [periodTransactions]);
-  const trend = useMemo(() => getTrendTotals(transactions, period), [transactions, period]);
+  const trend = useMemo(() => getTrendTotals(transactions, period, locale), [transactions, period, locale]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -49,11 +52,11 @@ export function AnalyticsScreen() {
               fontWeight: typography.weight.bold,
             }}
           >
-            Analytics
+            {t('analytics.title')}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Export report"
+            accessibilityLabel={t('analytics.exportReport')}
             hitSlop={8}
             onPress={() => navigation.navigate('ExportSheet')}
             style={[styles.exportButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
@@ -77,7 +80,7 @@ export function AnalyticsScreen() {
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
-            {TREND_CHART_TITLE[period]}
+            {getTrendChartTitle(t, period)}
           </Text>
           <TrendBarChart data={trend} />
         </View>
@@ -89,14 +92,14 @@ export function AnalyticsScreen() {
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
-            Spending by category
+            {t('analytics.spendingByCategory')}
           </Text>
 
           {breakdown.length === 0 ? (
             <EmptyState
               icon="pie-chart-outline"
-              title="No spending yet"
-              description="Add expenses to see your category breakdown."
+              title={t('analytics.noSpendingTitle')}
+              description={t('analytics.noSpendingDescription')}
             />
           ) : (
             <View style={styles.breakdownRow}>
@@ -114,7 +117,7 @@ export function AnalyticsScreen() {
                       style={{ color: colors.textPrimary, fontSize: typography.size.sm, flex: 1 }}
                       numberOfLines={1}
                     >
-                      {CATEGORY_LABEL[slice.category]}
+                      {getCategoryLabel(t, slice.category)}
                     </Text>
                     <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm }}>
                       {Math.round(slice.ratio * 100)}%
@@ -122,7 +125,7 @@ export function AnalyticsScreen() {
                   </View>
                 ))}
                 <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginTop: spacing.xs }}>
-                  Total: {formatCurrency(summary.spent)}
+                  {t('analytics.total', { amount: formatCurrency(summary.spent) })}
                 </Text>
               </View>
             </View>
@@ -136,13 +139,13 @@ export function AnalyticsScreen() {
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
-            Top merchants
+            {t('analytics.topMerchants')}
           </Text>
           {topMerchants.length === 0 ? (
             <EmptyState
               icon="storefront-outline"
-              title="No merchants yet"
-              description="Spending by merchant will show up here."
+              title={t('analytics.noMerchantsTitle')}
+              description={t('analytics.noMerchantsDescription')}
             />
           ) : (
             <TopMerchants merchants={topMerchants} />

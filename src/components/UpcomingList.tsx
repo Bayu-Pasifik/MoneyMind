@@ -5,6 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { UpcomingTransaction } from '../types/upcoming';
 import { isDueSoon } from '../utils/upcoming';
 import { formatCurrency, formatDate } from '../utils/format';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   items: UpcomingTransaction[];
@@ -15,6 +16,7 @@ type Props = {
 
 export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
 
   return (
     <View
@@ -25,11 +27,11 @@ export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
     >
       <View style={styles.header}>
         <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
-          Upcoming
+          {t('upcoming.title')}
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Add upcoming item"
+          accessibilityLabel={t('upcoming.add')}
           hitSlop={8}
           onPress={onAdd}
         >
@@ -42,11 +44,11 @@ export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
           onPress={onAdd}
           style={[styles.emptyRow, { marginTop: spacing.md }]}
           accessibilityRole="button"
-          accessibilityLabel="Add an upcoming bill or income"
+          accessibilityLabel={t('upcoming.empty')}
         >
           <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
           <Text style={{ color: colors.primary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold, marginLeft: spacing.sm }}>
-            Add an upcoming bill or income
+            {t('upcoming.empty')}
           </Text>
         </Pressable>
       ) : (
@@ -57,7 +59,7 @@ export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
               key={item.id}
               onPress={() => onPressItem(item)}
               accessibilityRole="button"
-              accessibilityLabel={`${item.title}, due ${formatDate(item.dueDate)}, ${formatCurrency(item.amount)}`}
+              accessibilityLabel={`${item.title}, ${formatDate(item.dueDate, locale)}, ${formatCurrency(item.amount)}`}
               style={[
                 styles.row,
                 { paddingVertical: spacing.sm, borderBottomColor: colors.border, borderBottomWidth: index === items.length - 1 ? 0 : 1 },
@@ -65,7 +67,7 @@ export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
             >
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Mark ${item.title} as paid`}
+                accessibilityLabel={t('upcoming.markPaid', { title: item.title })}
                 hitSlop={8}
                 onPress={(event) => {
                   event.stopPropagation();
@@ -81,9 +83,9 @@ export function UpcomingList({ items, onAdd, onPressItem, onMarkPaid }: Props) {
                   {item.title}
                 </Text>
                 <Text style={{ color: dueSoon ? colors.warningText : colors.textTertiary, fontSize: typography.size.xs }}>
-                  {dueSoon ? 'Due soon · ' : 'Due '}
-                  {formatDate(item.dueDate)}
-                  {item.recurring ? ' · Repeats monthly' : ''}
+                  {dueSoon ? t('upcoming.dueSoon') : t('upcoming.due')}
+                  {formatDate(item.dueDate, locale)}
+                  {item.recurring ? t('upcoming.repeatsMonthly') : ''}
                 </Text>
               </View>
               <Text

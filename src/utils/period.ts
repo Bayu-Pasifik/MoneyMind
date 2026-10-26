@@ -1,13 +1,11 @@
 import { Transaction } from '../types/transaction';
+import { TFunction } from '../i18n/LocaleContext';
 
 export type Period = 'week' | 'month' | '3months' | 'year';
 
-export const PERIOD_LABEL: Record<Period, string> = {
-  week: 'Week',
-  month: 'Month',
-  '3months': '3 Months',
-  year: 'Year',
-};
+export function getPeriodLabel(t: TFunction, period: Period): string {
+  return t(`period.${period}`);
+}
 
 const PERIOD_DAYS: Record<Period, number> = {
   week: 7,

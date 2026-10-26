@@ -8,9 +8,10 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { TransactionCategory, TransactionType } from '../types/transaction';
 import { UpcomingTransaction } from '../types/upcoming';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { getCategoryLabel } from '../utils/categories';
 import { formatDate } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UpcomingForm'>;
 
@@ -19,6 +20,7 @@ const INCOME_CATEGORIES: TransactionCategory[] = ['salary', 'transfer', 'other']
 
 export function UpcomingFormScreen({ navigation, route }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { addItem, updateItem, removeItem, getById } = useUpcoming();
   const announce = useAnnounce();
 
@@ -49,18 +51,18 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
     const parsedAmount = Number(amount);
     const dueDate = fromDateInputValue(dateText);
     if (!title.trim() || !parsedAmount || parsedAmount <= 0) {
-      announce('Enter a title and a valid amount before saving');
+      announce(t('upcomingForm.validationMissing'));
       return;
     }
     if (!dueDate) {
-      announce('Enter the due date as YYYY-MM-DD');
+      announce(t('upcomingForm.validationDate'));
       return;
     }
 
     if (existing) {
       const updated: UpcomingTransaction = { ...existing, title: title.trim(), amount: parsedAmount, type, category, dueDate, recurring };
       updateItem(updated);
-      announce('Upcoming item updated');
+      announce(t('upcomingForm.updated'));
     } else {
       const item: UpcomingTransaction = {
         id: `upcoming-${Date.now()}`,
@@ -72,7 +74,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
         recurring,
       };
       addItem(item);
-      announce('Upcoming item added');
+      announce(t('upcomingForm.added'));
     }
     navigation.goBack();
   };
@@ -80,7 +82,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
   const handleDelete = () => {
     if (!existing) return;
     removeItem(existing.id);
-    announce('Upcoming item removed');
+    announce(t('upcomingForm.removed'));
     navigation.goBack();
   };
 
@@ -92,7 +94,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
           accessibilityRole="header"
           style={{ color: colors.textPrimary, fontSize: typography.size.xl, fontWeight: typography.weight.bold, marginBottom: spacing.lg }}
         >
-          {isEditing ? 'Edit upcoming item' : 'Add upcoming item'}
+          {isEditing ? t('upcomingForm.editTitle') : t('upcomingForm.addTitle')}
         </Text>
 
         <View style={[styles.typeRow, { marginBottom: spacing.lg }]}>
@@ -117,28 +119,28 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
                 ]}
               >
                 <Text style={{ color: selected ? colors.primaryText : colors.textPrimary, fontWeight: typography.weight.semibold }}>
-                  {option === 'expense' ? 'Expense' : 'Income'}
+                  {option === 'expense' ? t('addTransaction.expense') : t('addTransaction.income')}
                 </Text>
               </Pressable>
             );
           })}
         </View>
 
-        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>Title</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>{t('addTransaction.titleLabel')}</Text>
         <TextInput
           value={title}
           onChangeText={setTitle}
-          accessibilityLabel="Title"
-          placeholder="e.g. Rent, Netflix, Freelance payment"
+          accessibilityLabel={t('addTransaction.titleLabel')}
+          placeholder={t('upcomingForm.titlePlaceholder')}
           placeholderTextColor={colors.textTertiary}
           style={[styles.input, { color: colors.textPrimary, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.md, marginBottom: spacing.lg }]}
         />
 
-        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>Amount</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>{t('addTransaction.amountLabel')}</Text>
         <TextInput
           value={amount}
           onChangeText={setAmount}
-          accessibilityLabel="Amount"
+          accessibilityLabel={t('addTransaction.amountLabel')}
           placeholder="0"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
@@ -146,39 +148,39 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
         />
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
-          Due date (YYYY-MM-DD)
+          {t('upcomingForm.dueDateLabel')}
         </Text>
         <TextInput
           value={dateText}
           onChangeText={setDateText}
-          accessibilityLabel="Due date"
+          accessibilityLabel={t('upcomingForm.dueDateLabel')}
           placeholder={toDateInputValue(new Date().toISOString())}
           placeholderTextColor={colors.textTertiary}
           style={[styles.input, { color: colors.textPrimary, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.md, marginBottom: spacing.xs }]}
         />
         {fromDateInputValue(dateText) ? (
           <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
-            {formatDate(fromDateInputValue(dateText)!)}
+            {formatDate(fromDateInputValue(dateText)!, locale)}
           </Text>
         ) : (
           <Text style={{ color: colors.dangerText, fontSize: typography.size.xs, marginBottom: spacing.lg }}>
-            Use the format YYYY-MM-DD, e.g. {toDateInputValue(new Date().toISOString())}
+            {t('addTransaction.dateInvalid', { example: toDateInputValue(new Date().toISOString()) })}
           </Text>
         )}
 
         <View style={[styles.recurringRow, { marginBottom: spacing.lg }]}>
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-              Repeats monthly
+              {t('upcomingForm.repeatsMonthly')}
             </Text>
             <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>
-              When marked paid, it reschedules a month ahead instead of disappearing.
+              {t('upcomingForm.repeatsMonthlyHint')}
             </Text>
           </View>
           <Switch value={recurring} onValueChange={setRecurring} trackColor={{ true: colors.primary }} />
         </View>
 
-        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>Category</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>{t('addTransaction.categoryLabel')}</Text>
         <View style={[styles.categoryWrap, { marginBottom: spacing.xxl }]}>
           {categories.map((option) => {
             const selected = option === category;
@@ -200,7 +202,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
                 ]}
               >
                 <Text style={{ color: selected ? colors.primary : colors.textSecondary, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
-                  {CATEGORY_LABEL[option]}
+                  {getCategoryLabel(t, option)}
                 </Text>
               </Pressable>
             );
@@ -213,7 +215,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
           style={[styles.saveButton, { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md }]}
         >
           <Text style={{ color: colors.primaryText, fontWeight: typography.weight.semibold }}>
-            {isEditing ? 'Save changes' : 'Add to upcoming'}
+            {isEditing ? t('upcomingForm.saveChanges') : t('upcomingForm.addToUpcoming')}
           </Text>
         </Pressable>
 
@@ -223,7 +225,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
             onPress={handleDelete}
             style={[styles.deleteButton, { borderColor: colors.dangerText, borderRadius: radii.md, padding: spacing.md, marginTop: spacing.md }]}
           >
-            <Text style={{ color: colors.dangerText, fontWeight: typography.weight.semibold }}>Remove</Text>
+            <Text style={{ color: colors.dangerText, fontWeight: typography.weight.semibold }}>{t('upcomingForm.remove')}</Text>
           </Pressable>
         ) : null}
       </ScrollView>

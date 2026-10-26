@@ -1,5 +1,8 @@
 import { Transaction, TransactionCategory } from '../types/transaction';
 import { Period } from './period';
+import { Locale, TFunction } from '../i18n/LocaleContext';
+
+const INTL_LOCALE: Record<Locale, string> = { en: 'en-US', id: 'id-ID' };
 
 export type CategoryBreakdown = {
   category: TransactionCategory;
@@ -66,24 +69,22 @@ const TREND_BUCKETS: Record<Period, { count: number; bucketDays: number }> = {
   year: { count: 12, bucketDays: 30 },
 };
 
-export const TREND_CHART_TITLE: Record<Period, string> = {
-  week: 'Daily spending',
-  month: 'Spending by 5-day period',
-  '3months': 'Spending by half-month',
-  year: 'Spending by month',
-};
-
-function bucketLabel(period: Period, start: Date, end: Date): string {
-  if (period === 'week') {
-    return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(start);
-  }
-  if (period === 'year') {
-    return new Intl.DateTimeFormat('en-US', { month: 'short' }).format(start);
-  }
-  return new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(start);
+export function getTrendChartTitle(t: TFunction, period: Period): string {
+  return t(`trend.${period}`);
 }
 
-function getYearlyMonthTotals(transactions: Transaction[]): DayTotal[] {
+function bucketLabel(locale: Locale, period: Period, start: Date): string {
+  const intlLocale = INTL_LOCALE[locale];
+  if (period === 'week') {
+    return new Intl.DateTimeFormat(intlLocale, { weekday: 'short' }).format(start);
+  }
+  if (period === 'year') {
+    return new Intl.DateTimeFormat(intlLocale, { month: 'short' }).format(start);
+  }
+  return new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' }).format(start);
+}
+
+function getYearlyMonthTotals(transactions: Transaction[], locale: Locale): DayTotal[] {
   const year = new Date().getFullYear();
   const results: DayTotal[] = [];
 
@@ -99,15 +100,15 @@ function getYearlyMonthTotals(transactions: Transaction[]): DayTotal[] {
       })
       .reduce((sum, item) => sum + item.amount, 0);
 
-    results.push({ label: bucketLabel('year', start, end), total });
+    results.push({ label: bucketLabel(locale, 'year', start), total });
   }
 
   return results;
 }
 
-export function getTrendTotals(transactions: Transaction[], period: Period): DayTotal[] {
+export function getTrendTotals(transactions: Transaction[], period: Period, locale: Locale): DayTotal[] {
   if (period === 'year') {
-    return getYearlyMonthTotals(transactions);
+    return getYearlyMonthTotals(transactions, locale);
   }
 
   const { count, bucketDays } = TREND_BUCKETS[period];
@@ -130,7 +131,7 @@ export function getTrendTotals(transactions: Transaction[], period: Period): Day
       })
       .reduce((sum, item) => sum + item.amount, 0);
 
-    results.push({ label: bucketLabel(period, start, end), total });
+    results.push({ label: bucketLabel(locale, period, start), total });
   }
 
   return results;

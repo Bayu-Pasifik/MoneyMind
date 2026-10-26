@@ -18,23 +18,27 @@ import { UpcomingTransaction } from '../types/upcoming';
 import { generateHomeInsight } from '../utils/insight';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
 import { useUpcoming } from '../store/UpcomingContext';
+import { useWeeklyReport } from '../store/WeeklyReportContext';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { useLocale } from '../i18n/LocaleContext';
 
 const RECENT_COUNT = 5;
 
 export function HomeScreen() {
   const { colors, spacing, typography } = useTheme();
+  const { t } = useLocale();
   const { transactions, balance, totalIncome, totalExpense, addTransaction } = useTransactions();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { enabled: captureEnabled } = useNotificationCapture();
   const { items: upcomingItems, removeItem: removeUpcoming, rescheduleItem } = useUpcoming();
+  const { enabled: weeklyReportEnabled, latestReport } = useWeeklyReport();
   const announce = useAnnounce();
 
   const recent = [...transactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, RECENT_COUNT);
 
-  const insight = useMemo(() => generateHomeInsight(transactions), [transactions]);
+  const insight = useMemo(() => generateHomeInsight(transactions, t), [transactions, t]);
 
   const capturedToday = useMemo(() => {
     const today = new Date();
@@ -66,17 +70,17 @@ export function HomeScreen() {
     });
     if (item.recurring) {
       rescheduleItem(item.id);
-      announce(`${item.title} marked paid and rescheduled for next month`);
+      announce(t('home.markedPaidRecurring', { title: item.title }));
     } else {
       removeUpcoming(item.id);
-      announce(`${item.title} marked paid`);
+      announce(t('home.markedPaid', { title: item.title }));
     }
   };
 
   const quickActions = [
     {
       key: 'scan',
-      label: 'Scan Receipt',
+      label: t('home.quickScan'),
       icon: 'camera-outline' as const,
       iconColor: colors.primary,
       iconBg: colors.primaryLight,
@@ -84,7 +88,7 @@ export function HomeScreen() {
     },
     {
       key: 'manual',
-      label: 'Add Manual',
+      label: t('home.quickManual'),
       icon: 'add-circle-outline' as const,
       iconColor: colors.successText,
       iconBg: '#E6FAF4',
@@ -92,7 +96,7 @@ export function HomeScreen() {
     },
     {
       key: 'chat',
-      label: 'AI Chat',
+      label: t('home.quickChat'),
       icon: 'chatbubble-ellipses-outline' as const,
       iconColor: colors.telegram,
       iconBg: '#E3F5FC',
@@ -118,7 +122,7 @@ export function HomeScreen() {
                 marginBottom: spacing.lg,
               }}
             >
-              Hi there
+              {t('home.greeting')}
             </Text>
             <BalanceHero balance={balance} income={totalIncome} expense={totalExpense} />
             {captureEnabled && capturedToday > 0 ? (
@@ -144,6 +148,15 @@ export function HomeScreen() {
                 onPress={() => navigation.navigate('MainTabs', { screen: 'Chat' })}
               />
             </View>
+            {weeklyReportEnabled && latestReport ? (
+              <View style={{ marginBottom: spacing.lg }}>
+                <AiInsightCard
+                  label={latestReport.title}
+                  message={latestReport.summary}
+                  onPress={() => navigation.navigate('MainTabs', { screen: 'Analytics' })}
+                />
+              </View>
+            ) : null}
             <View style={{ marginBottom: spacing.lg }}>
               <UpcomingList
                 items={upcomingItems}
@@ -160,7 +173,7 @@ export function HomeScreen() {
                 marginBottom: spacing.md,
               }}
             >
-              Recent transactions
+              {t('home.recentTransactions')}
             </Text>
           </View>
         }
@@ -168,8 +181,8 @@ export function HomeScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="wallet-outline"
-            title="No activity yet"
-            description="Transactions you add will show up here."
+            title={t('home.emptyTitle')}
+            description={t('home.emptyDescription')}
           />
         }
       />

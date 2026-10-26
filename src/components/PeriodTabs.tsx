@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { Period, PERIOD_LABEL } from '../utils/period';
+import { Period, getPeriodLabel } from '../utils/period';
+import { useLocale } from '../i18n/LocaleContext';
 
 const PERIODS: Period[] = ['week', 'month', '3months', 'year'];
 
@@ -12,6 +13,7 @@ type Props = {
 
 export function PeriodTabs({ value, onChange }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View
@@ -44,7 +46,7 @@ export function PeriodTabs({ value, onChange }: Props) {
                 fontWeight: typography.weight.semibold,
               }}
             >
-              {PERIOD_LABEL[period]}
+              {getPeriodLabel(t, period)}
             </Text>
           </Pressable>
         );

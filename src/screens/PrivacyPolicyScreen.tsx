@@ -2,41 +2,26 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import { TranslationKey, useLocale } from '../i18n/LocaleContext';
 
 type Section = {
-  title: string;
-  body: string;
+  titleKey: TranslationKey;
+  bodyKey: TranslationKey;
 };
 
 const SECTIONS: Section[] = [
-  {
-    title: 'Data storage',
-    body: 'Your transactions, budgets, and upcoming bills are stored locally on this device in a SQLite database. MoneyMind does not upload this data to any server.',
-  },
-  {
-    title: 'Receipt scanning',
-    body: 'Photos you scan are sent to the OCR provider only to extract text from the receipt, then discarded. The extracted text is used to pre-fill a transaction you review before saving.',
-  },
-  {
-    title: 'Notification capture',
-    body: 'When enabled, MoneyMind reads bank/e-wallet notification text on this device to suggest transactions. This stays on-device and can be turned off anytime in Settings.',
-  },
-  {
-    title: 'Bill reminders',
-    body: 'Upcoming bills and expected income schedule a local reminder notification on this device for their due date. Nothing is sent off-device for this.',
-  },
-  {
-    title: 'Telegram integration',
-    body: 'The Telegram connection in this version is a local demo: no messages are sent to or received from a real Telegram bot.',
-  },
-  {
-    title: 'Your control',
-    body: 'You can edit or delete any transaction, and disable notification capture or Telegram at any time from Settings.',
-  },
+  { titleKey: 'privacy.dataStorage.title', bodyKey: 'privacy.dataStorage.body' },
+  { titleKey: 'privacy.receiptScanning.title', bodyKey: 'privacy.receiptScanning.body' },
+  { titleKey: 'privacy.notificationCapture.title', bodyKey: 'privacy.notificationCapture.body' },
+  { titleKey: 'privacy.billReminders.title', bodyKey: 'privacy.billReminders.body' },
+  { titleKey: 'privacy.weeklyReport.title', bodyKey: 'privacy.weeklyReport.body' },
+  { titleKey: 'privacy.telegram.title', bodyKey: 'privacy.telegram.body' },
+  { titleKey: 'privacy.yourControl.title', bodyKey: 'privacy.yourControl.body' },
 ];
 
 export function PrivacyPolicyScreen() {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -51,14 +36,14 @@ export function PrivacyPolicyScreen() {
             marginBottom: spacing.xs,
           }}
         >
-          Privacy policy
+          {t('privacy.title')}
         </Text>
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.lg }}>
-          How MoneyMind handles your data.
+          {t('privacy.subtitle')}
         </Text>
 
         {SECTIONS.map((section) => (
-          <View key={section.title} style={{ marginBottom: spacing.lg }}>
+          <View key={section.titleKey} style={{ marginBottom: spacing.lg }}>
             <Text
               style={{
                 color: colors.textPrimary,
@@ -67,10 +52,10 @@ export function PrivacyPolicyScreen() {
                 marginBottom: spacing.xs,
               }}
             >
-              {section.title}
+              {t(section.titleKey)}
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, lineHeight: 20 }}>
-              {section.body}
+              {t(section.bodyKey)}
             </Text>
           </View>
         ))}

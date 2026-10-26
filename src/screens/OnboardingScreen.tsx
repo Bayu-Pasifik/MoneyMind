@@ -13,30 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useAnnounce } from '../hooks/useAnnounce';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Slide = {
+  key: string;
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   description: string;
 };
-
-const SLIDES: Slide[] = [
-  {
-    icon: 'wallet-outline',
-    title: 'Track every rupiah',
-    description: 'Log income and expenses in seconds and always know where your money goes.',
-  },
-  {
-    icon: 'camera-outline',
-    title: 'Scan receipts instantly',
-    description: 'Snap a photo of a receipt and let MoneyMind fill in the details for you.',
-  },
-  {
-    icon: 'stats-chart-outline',
-    title: 'See the bigger picture',
-    description: 'Visual breakdowns and an AI assistant help you understand your spending habits.',
-  },
-];
 
 type Props = {
   onDone: () => void;
@@ -46,9 +30,16 @@ const { width } = Dimensions.get('window');
 
 export function OnboardingScreen({ onDone }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
   const announce = useAnnounce();
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [index, setIndex] = useState(0);
+
+  const SLIDES: Slide[] = [
+    { key: 'slide1', icon: 'wallet-outline', title: t('onboarding.slide1Title'), description: t('onboarding.slide1Description') },
+    { key: 'slide2', icon: 'camera-outline', title: t('onboarding.slide2Title'), description: t('onboarding.slide2Description') },
+    { key: 'slide3', icon: 'stats-chart-outline', title: t('onboarding.slide3Title'), description: t('onboarding.slide3Description') },
+  ];
 
   const isLast = index === SLIDES.length - 1;
 
@@ -77,10 +68,10 @@ export function OnboardingScreen({ onDone }: Props) {
         <View style={{ flex: 1 }} />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Skip onboarding"
+          accessibilityLabel={t('onboarding.skip')}
           onPress={onDone}
         >
-          <Text style={{ color: colors.textSecondary, fontSize: typography.size.md }}>Skip</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: typography.size.md }}>{t('onboarding.skip')}</Text>
         </Pressable>
       </View>
 
@@ -92,7 +83,7 @@ export function OnboardingScreen({ onDone }: Props) {
         onMomentumScrollEnd={handleMomentumEnd}
       >
         {SLIDES.map((slide) => (
-          <View key={slide.title} style={[styles.slide, { width, paddingHorizontal: spacing.xxl }]}>
+          <View key={slide.key} style={[styles.slide, { width, paddingHorizontal: spacing.xxl }]}>
             <View
               style={[
                 styles.iconWrap,
@@ -133,7 +124,7 @@ export function OnboardingScreen({ onDone }: Props) {
       >
         {SLIDES.map((slide, slideIndex) => (
           <View
-            key={slide.title}
+            key={slide.key}
             style={[
               styles.dot,
               {
@@ -149,12 +140,12 @@ export function OnboardingScreen({ onDone }: Props) {
       <View style={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xl }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isLast ? 'Get started' : 'Next'}
+          accessibilityLabel={isLast ? t('onboarding.getStarted') : t('onboarding.next')}
           onPress={handleNext}
           style={[styles.nextButton, { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md }]}
         >
           <Text style={{ color: colors.primaryText, fontWeight: typography.weight.semibold, fontSize: typography.size.md }}>
-            {isLast ? 'Get started' : 'Next'}
+            {isLast ? t('onboarding.getStarted') : t('onboarding.next')}
           </Text>
         </Pressable>
       </View>

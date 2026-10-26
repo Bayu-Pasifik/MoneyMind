@@ -10,22 +10,12 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
 import { useTelegram } from '../store/TelegramContext';
-
-const THEME_LABEL: Record<string, string> = {
-  system: 'System',
-  light: 'Light',
-  dark: 'Dark',
-};
-
-const PERMISSION_LABEL: Record<string, string> = {
-  authorized: 'Access granted',
-  denied: 'Access not granted — tap to open settings',
-  unknown: 'Access not granted — tap to open settings',
-  unsupported: 'Needs a custom Android build (not Expo Go)',
-};
+import { useWeeklyReport } from '../store/WeeklyReportContext';
+import { Locale, useLocale } from '../i18n/LocaleContext';
 
 export function SettingsScreen() {
   const { colors, spacing, radii, typography, preference, setPreference } = useTheme();
+  const { t, locale, setLocale } = useLocale();
   const announce = useAnnounce();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {
@@ -34,7 +24,26 @@ export function SettingsScreen() {
     permissionStatus,
     requestPermission: requestNotificationPermission,
   } = useNotificationCapture();
-  const { connected: telegramConnected, username, connect, disconnect, weeklyReport, setWeeklyReport } = useTelegram();
+  const { connected: telegramConnected, username, connect, disconnect } = useTelegram();
+  const { enabled: weeklyReportEnabled, setEnabled: setWeeklyReportEnabled } = useWeeklyReport();
+
+  const THEME_LABEL: Record<ThemePreference, string> = {
+    system: t('settings.themeSystem'),
+    light: t('settings.themeLight'),
+    dark: t('settings.themeDark'),
+  };
+
+  const LANGUAGE_LABEL: Record<Locale, string> = {
+    en: t('settings.languageEnglish'),
+    id: t('settings.languageIndonesian'),
+  };
+
+  const PERMISSION_LABEL: Record<string, string> = {
+    authorized: t('settings.permission.authorized'),
+    denied: t('settings.permission.denied'),
+    unknown: t('settings.permission.unknown'),
+    unsupported: t('settings.permission.unsupported'),
+  };
 
   const toggleCapture = (value: boolean) => {
     setCaptureEnabled(value);
@@ -58,6 +67,13 @@ export function SettingsScreen() {
     announce(`Theme set to ${THEME_LABEL[next]}`);
   };
 
+  const cycleLanguage = () => {
+    const order: Locale[] = ['en', 'id'];
+    const next = order[(order.indexOf(locale) + 1) % order.length];
+    setLocale(next);
+    announce(`Language set to ${LANGUAGE_LABEL[next]}`);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
@@ -72,7 +88,7 @@ export function SettingsScreen() {
             paddingBottom: spacing.lg,
           }}
         >
-          Settings
+          {t('settings.title')}
         </Text>
 
         <LinearGradient
@@ -88,23 +104,25 @@ export function SettingsScreen() {
           </View>
           <View style={{ marginLeft: spacing.md }}>
             <Text style={{ color: '#FFFFFF', fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
-              MoneyMind User
+              {t('settings.profileName')}
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: typography.size.sm }}>
-              user@moneymind.app
+              {t('settings.profileEmail')}
             </Text>
           </View>
         </LinearGradient>
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
-          Preferences
+          {t('settings.sectionPreferences')}
         </Text>
         <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1, marginBottom: spacing.xl }}>
-          <SettingsRow icon="moon-outline" label="Theme" value={THEME_LABEL[preference]} onPress={cycleTheme} />
+          <SettingsRow icon="language-outline" label={t('settings.language')} value={LANGUAGE_LABEL[locale]} onPress={cycleLanguage} />
+          <Divider />
+          <SettingsRow icon="moon-outline" label={t('settings.theme')} value={THEME_LABEL[preference]} onPress={cycleTheme} />
           <Divider />
           <SettingsRow
             icon="flash-outline"
-            label="Notification Capture"
+            label={t('settings.notificationCapture')}
             value={PERMISSION_LABEL[permissionStatus]}
             onPress={permissionStatus === 'unsupported' ? undefined : requestNotificationPermission}
             right={
@@ -119,8 +137,8 @@ export function SettingsScreen() {
           <Divider />
           <SettingsRow
             icon="paper-plane-outline"
-            label="Telegram"
-            value={telegramConnected ? `Connected · ${username}` : 'Not connected'}
+            label={t('settings.telegram')}
+            value={telegramConnected ? t('settings.telegramConnected', { username }) : t('settings.telegramNotConnected')}
             right={
               <Switch
                 value={telegramConnected}
@@ -129,34 +147,34 @@ export function SettingsScreen() {
               />
             }
           />
-          {telegramConnected ? (
-            <>
-              <Divider />
-              <SettingsRow
-                icon="calendar-outline"
-                label="Weekly AI Report"
-                right={
-                  <Switch
-                    value={weeklyReport}
-                    onValueChange={setWeeklyReport}
-                    trackColor={{ true: colors.primary }}
-                  />
-                }
-              />
-            </>
-          ) : null}
           <Divider />
-          <SettingsRow icon="cash-outline" label="Currency" value="IDR" />
+          <SettingsRow
+            icon="calendar-outline"
+            label={t('settings.weeklyReport')}
+            value={t('settings.weeklyReportSubtitle')}
+            right={
+              <Switch
+                value={weeklyReportEnabled}
+                onValueChange={(value) => {
+                  setWeeklyReportEnabled(value);
+                  announce(value ? 'Weekly report enabled' : 'Weekly report disabled');
+                }}
+                trackColor={{ true: colors.primary }}
+              />
+            }
+          />
+          <Divider />
+          <SettingsRow icon="cash-outline" label={t('settings.currency')} value="IDR" />
           <Divider />
           <SettingsRow
             icon="pie-chart-outline"
-            label="Budget limits"
+            label={t('settings.budgetLimits')}
             onPress={() => navigation.navigate('BudgetSettings')}
           />
           <Divider />
           <SettingsRow
             icon="download-outline"
-            label="Export transactions"
+            label={t('settings.exportTransactions')}
             onPress={() => navigation.navigate('ExportSheet')}
           />
         </View>
@@ -164,7 +182,7 @@ export function SettingsScreen() {
         {captureEnabled ? (
           <View style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}>
             <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginBottom: spacing.xs }]}>
-              Notification Preview
+              {t('settings.notificationPreview')}
             </Text>
             <View
               style={[
@@ -177,10 +195,10 @@ export function SettingsScreen() {
               </View>
               <View style={{ flex: 1, marginLeft: spacing.sm }}>
                 <Text style={{ color: colors.textPrimary, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
-                  BCA Mobile
+                  {t('settings.notificationPreviewApp')}
                 </Text>
                 <Text style={{ color: colors.textSecondary, fontSize: typography.size.xs }} numberOfLines={2}>
-                  Debit Rp 45.000 at Coffee Bean Co. detected and logged to MoneyMind.
+                  {t('settings.notificationPreviewBody')}
                 </Text>
               </View>
             </View>
@@ -188,14 +206,14 @@ export function SettingsScreen() {
         ) : null}
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
-          About
+          {t('settings.sectionAbout')}
         </Text>
         <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1 }}>
-          <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
+          <SettingsRow icon="information-circle-outline" label={t('settings.version')} value="1.0.0" />
           <Divider />
           <SettingsRow
             icon="shield-checkmark-outline"
-            label="Privacy policy"
+            label={t('settings.privacyPolicy')}
             onPress={() => navigation.navigate('PrivacyPolicy')}
           />
         </View>

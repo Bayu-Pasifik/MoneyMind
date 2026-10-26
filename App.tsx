@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { LocaleProvider } from './src/i18n/LocaleContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 
@@ -46,10 +47,12 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <SafeAreaProvider>
-          <ThemedStatusBar />
-          <AppContent />
-        </SafeAreaProvider>
+        <LocaleProvider>
+          <SafeAreaProvider>
+            <ThemedStatusBar />
+            <AppContent />
+          </SafeAreaProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

@@ -8,6 +8,7 @@ import { NotificationCaptureProvider } from '../store/NotificationCaptureContext
 import { TelegramProvider } from '../store/TelegramContext';
 import { BudgetsProvider } from '../store/BudgetsContext';
 import { UpcomingProvider } from '../store/UpcomingContext';
+import { WeeklyReportProvider } from '../store/WeeklyReportContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -56,6 +57,7 @@ export function RootNavigator() {
       <DatabaseGate>
       <BudgetsProvider>
       <UpcomingProvider>
+      <WeeklyReportProvider>
       <NotificationCaptureProvider>
       <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
@@ -136,6 +138,7 @@ export function RootNavigator() {
         </NavigationContainer>
       </TelegramProvider>
       </NotificationCaptureProvider>
+      </WeeklyReportProvider>
       </UpcomingProvider>
       </BudgetsProvider>
       </DatabaseGate>

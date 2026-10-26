@@ -1,11 +1,14 @@
 import { Transaction } from '../types/transaction';
+import { Locale, TFunction } from '../i18n/LocaleContext';
+
+const INTL_LOCALE: Record<Locale, string> = { en: 'en-US', id: 'id-ID' };
 
 export type TransactionSection = {
   title: string;
   data: Transaction[];
 };
 
-function dayLabel(iso: string): string {
+function dayLabel(iso: string, t: TFunction, locale: Locale): string {
   const date = new Date(iso);
   const today = new Date();
   const yesterday = new Date();
@@ -16,24 +19,28 @@ function dayLabel(iso: string): string {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-  if (isSameDay(date, today)) return 'Today';
-  if (isSameDay(date, yesterday)) return 'Yesterday';
+  if (isSameDay(date, today)) return t('common.today');
+  if (isSameDay(date, yesterday)) return t('common.yesterday');
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     day: 'numeric',
     month: 'long',
     year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
   }).format(date);
 }
 
-export function groupTransactionsByDay(transactions: Transaction[]): TransactionSection[] {
+export function groupTransactionsByDay(
+  transactions: Transaction[],
+  t: TFunction,
+  locale: Locale
+): TransactionSection[] {
   const sorted = [...transactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   const sections: TransactionSection[] = [];
   for (const transaction of sorted) {
-    const title = dayLabel(transaction.date);
+    const title = dayLabel(transaction.date, t, locale);
     const existing = sections.find((section) => section.title === title);
     if (existing) {
       existing.data.push(transaction);

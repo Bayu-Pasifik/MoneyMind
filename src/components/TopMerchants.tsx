@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { MerchantTotal } from '../utils/period';
 import { formatCurrency } from '../utils/format';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   merchants: MerchantTotal[];
@@ -10,6 +11,7 @@ type Props = {
 
 export function TopMerchants({ merchants }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View>
@@ -29,7 +31,7 @@ export function TopMerchants({ merchants }: Props) {
               {merchant.merchant}
             </Text>
             <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs }}>
-              {merchant.count} transaction{merchant.count === 1 ? '' : 's'}
+              {t(merchant.count === 1 ? 'merchant.transactionCountOne' : 'merchant.transactionCountOther', { count: merchant.count })}
             </Text>
           </View>
           <Text style={{ color: colors.textPrimary, fontSize: typography.size.sm, fontWeight: typography.weight.bold }}>

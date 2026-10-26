@@ -1,16 +1,21 @@
 import { TransactionCategory } from '../types/transaction';
+import { TFunction } from '../i18n/LocaleContext';
 
-export const CATEGORY_LABEL: Record<TransactionCategory, string> = {
-  food: 'Food & Drink',
-  transport: 'Transport',
-  shopping: 'Shopping',
-  bills: 'Bills',
-  health: 'Health',
-  entertainment: 'Entertainment',
-  salary: 'Salary',
-  transfer: 'Transfer',
-  other: 'Other',
-};
+export function getCategoryLabel(t: TFunction, category: TransactionCategory): string {
+  return t(`category.${category}`);
+}
+
+export const ALL_CATEGORIES: TransactionCategory[] = [
+  'food',
+  'transport',
+  'shopping',
+  'bills',
+  'health',
+  'entertainment',
+  'salary',
+  'transfer',
+  'other',
+];
 
 export const CATEGORY_CHART_COLORS: Record<TransactionCategory, string> = {
   food: '#FF8A65',

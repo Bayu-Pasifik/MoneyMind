@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { formatCurrency } from '../utils/format';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   balance: number;
@@ -12,6 +13,7 @@ type Props = {
 
 export function BalanceHero({ balance, income, expense }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
 
   return (
     <LinearGradient
@@ -20,7 +22,7 @@ export function BalanceHero({ balance, income, expense }: Props) {
       end={{ x: 1, y: 1 }}
       style={[styles.container, { borderRadius: radii.xl, padding: spacing.xl }]}
     >
-      <Text style={[styles.label, { fontSize: typography.size.sm }]}>Total balance</Text>
+      <Text style={[styles.label, { fontSize: typography.size.sm }]}>{t('balance.total')}</Text>
       <Text
         accessibilityRole="text"
         style={[styles.balance, { fontSize: typography.size.display, marginTop: spacing.xs }]}
@@ -32,7 +34,7 @@ export function BalanceHero({ balance, income, expense }: Props) {
         <View style={styles.statItem}>
           <View style={[styles.dot, { backgroundColor: colors.success }]} />
           <View style={{ marginLeft: spacing.sm }}>
-            <Text style={styles.statLabel}>Income</Text>
+            <Text style={styles.statLabel}>{t('balance.income')}</Text>
             <Text style={[styles.statValue, { fontSize: typography.size.md }]}>
               {formatCurrency(income)}
             </Text>
@@ -41,7 +43,7 @@ export function BalanceHero({ balance, income, expense }: Props) {
         <View style={styles.statItem}>
           <View style={[styles.dot, { backgroundColor: colors.danger }]} />
           <View style={{ marginLeft: spacing.sm }}>
-            <Text style={styles.statLabel}>Expense</Text>
+            <Text style={styles.statLabel}>{t('balance.expense')}</Text>
             <Text style={[styles.statValue, { fontSize: typography.size.md }]}>
               {formatCurrency(expense)}
             </Text>

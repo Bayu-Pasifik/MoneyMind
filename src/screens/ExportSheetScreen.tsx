@@ -15,24 +15,15 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { ExportPreviewCard } from '../components/ExportPreviewCard';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExportSheet'>;
 
 type ExportFormat = 'csv' | 'pdf' | 'image';
 
-const RANGE_OPTIONS: { key: ExportRange; label: string }[] = [
-  { key: 'thisMonth', label: 'This month' },
-  { key: 'all', label: 'All time' },
-];
-
-const FORMAT_OPTIONS: { key: ExportFormat; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'csv', label: 'CSV', icon: 'grid-outline' },
-  { key: 'pdf', label: 'PDF', icon: 'document-text-outline' },
-  { key: 'image', label: 'Image', icon: 'image-outline' },
-];
-
 export function ExportSheetScreen({ navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { transactions } = useTransactions();
   const announce = useAnnounce();
   const [range, setRange] = useState<ExportRange>('thisMonth');
@@ -40,14 +31,25 @@ export function ExportSheetScreen({ navigation }: Props) {
   const [isExporting, setIsExporting] = useState(false);
   const previewRef = useRef<React.ComponentRef<typeof View>>(null);
 
+  const RANGE_OPTIONS: { key: ExportRange; label: string }[] = [
+    { key: 'thisMonth', label: t('export.rangeThisMonth') },
+    { key: 'all', label: t('export.rangeAllTime') },
+  ];
+
+  const FORMAT_OPTIONS: { key: ExportFormat; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'csv', label: t('export.formatCsv'), icon: 'grid-outline' },
+    { key: 'pdf', label: t('export.formatPdf'), icon: 'document-text-outline' },
+    { key: 'image', label: t('export.formatImage'), icon: 'image-outline' },
+  ];
+
   const filtered = filterByRange(transactions, range);
-  const income = filtered.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const expense = filtered.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const income = filtered.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
+  const expense = filtered.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0);
   const rangeLabel = RANGE_OPTIONS.find((option) => option.key === range)?.label ?? '';
 
   const handleExport = async () => {
     if (filtered.length === 0) {
-      announce('There is nothing to export for this range');
+      announce(t('export.nothingToExport'));
       return;
     }
 
@@ -58,21 +60,21 @@ export function ExportSheetScreen({ navigation }: Props) {
         const fileUri = `${FileSystem.cacheDirectory}moneymind-export-${Date.now()}.csv`;
         await FileSystem.writeAsStringAsync(fileUri, csv);
         if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Export report' });
+          await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: t('export.title') });
         }
       } else if (format === 'pdf') {
-        const html = transactionsToReportHtml(filtered, rangeLabel);
+        const html = transactionsToReportHtml(filtered, rangeLabel, t, locale);
         const { uri } = await Print.printToFileAsync({ html });
         if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Export report' });
+          await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: t('export.title') });
         }
       } else {
         const uri = await captureRef(previewRef, { format: 'png', quality: 1 });
         if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share report' });
+          await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t('export.title') });
         }
       }
-      announce('Report exported');
+      announce(t('export.exported'));
       navigation.goBack();
     } finally {
       setIsExporting(false);
@@ -92,11 +94,11 @@ export function ExportSheetScreen({ navigation }: Props) {
             marginBottom: spacing.lg,
           }}
         >
-          Export report
+          {t('export.title')}
         </Text>
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.sm }}>
-          Range
+          {t('export.range')}
         </Text>
         <View style={[styles.optionRow, { marginBottom: spacing.lg }]}>
           {RANGE_OPTIONS.map((option) => {
@@ -128,7 +130,7 @@ export function ExportSheetScreen({ navigation }: Props) {
         </View>
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.sm }}>
-          Format
+          {t('export.format')}
         </Text>
         <View style={[styles.optionRow, { marginBottom: spacing.lg }]}>
           {FORMAT_OPTIONS.map((option) => {
@@ -165,7 +167,7 @@ export function ExportSheetScreen({ navigation }: Props) {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Export report"
+          accessibilityLabel={t('export.title')}
           disabled={isExporting}
           onPress={handleExport}
           style={[
@@ -174,7 +176,9 @@ export function ExportSheetScreen({ navigation }: Props) {
           ]}
         >
           <Text style={{ color: colors.primaryText, fontWeight: typography.weight.semibold }}>
-            {isExporting ? 'Exporting…' : `Export ${FORMAT_OPTIONS.find((o) => o.key === format)?.label}`}
+            {isExporting
+              ? t('export.exporting')
+              : t('export.exportButton', { format: FORMAT_OPTIONS.find((o) => o.key === format)?.label ?? '' })}
           </Text>
         </Pressable>
       </View>

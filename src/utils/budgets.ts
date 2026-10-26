@@ -1,4 +1,5 @@
 import { TransactionCategory } from '../types/transaction';
+import { TFunction } from '../i18n/LocaleContext';
 
 export type BudgetStatus = 'ok' | 'warn' | 'over' | 'none';
 
@@ -18,9 +19,6 @@ export function getBudgetStatus(spent: number, limit: number): BudgetStatus {
   return 'ok';
 }
 
-export const BUDGET_STATUS_LABEL: Record<BudgetStatus, string> = {
-  ok: 'On track',
-  warn: 'Near limit',
-  over: 'Over budget',
-  none: 'No limit',
-};
+export function getBudgetStatusLabel(t: TFunction, status: BudgetStatus): string {
+  return t(`budgetStatus.${status}`);
+}

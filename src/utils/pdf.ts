@@ -1,20 +1,26 @@
 import { Transaction } from '../types/transaction';
-import { CATEGORY_LABEL } from './categories';
+import { getCategoryLabel } from './categories';
 import { formatCurrency, formatDate } from './format';
+import { Locale, TFunction } from '../i18n/LocaleContext';
 
-export function transactionsToReportHtml(transactions: Transaction[], rangeLabel: string): string {
-  const income = transactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const expense = transactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+export function transactionsToReportHtml(
+  transactions: Transaction[],
+  rangeLabel: string,
+  t: TFunction,
+  locale: Locale
+): string {
+  const income = transactions.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
+  const expense = transactions.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0);
 
   const rows = transactions
     .map(
-      (t) => `
+      (item) => `
         <tr>
-          <td>${formatDate(t.date)}</td>
-          <td>${t.title}</td>
-          <td>${CATEGORY_LABEL[t.category]}</td>
-          <td style="text-align:right;color:${t.type === 'income' ? '#00795E' : '#D92D38'}">
-            ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+          <td>${formatDate(item.date, locale)}</td>
+          <td>${item.title}</td>
+          <td>${getCategoryLabel(t, item.category)}</td>
+          <td style="text-align:right;color:${item.type === 'income' ? '#00795E' : '#D92D38'}">
+            ${item.type === 'income' ? '+' : '-'}${formatCurrency(item.amount)}
           </td>
         </tr>`
     )

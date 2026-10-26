@@ -13,6 +13,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { Transaction } from '../types/transaction';
 import { TransactionRow } from './TransactionRow';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   transaction: Transaction;
@@ -23,6 +24,7 @@ type Props = {
 
 export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCategorize }: Props) {
   const { colors, spacing, radii } = useTheme();
+  const { t } = useLocale();
   const reducedMotion = useReducedMotion();
   const swipeableRef = useRef<SwipeableMethods>(null);
   const [rowHeight, setRowHeight] = useState<number | null>(null);
@@ -56,7 +58,7 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCate
         <View style={styles.actionRow}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Tag ${transaction.title}`}
+            accessibilityLabel={t('common.tagFor', { title: transaction.title })}
             onPress={() => {
               swipeableRef.current?.close();
               onCategorize(transaction);
@@ -67,11 +69,11 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCate
             ]}
           >
             <Ionicons name="pricetag-outline" size={18} color="#FFFFFF" />
-            <Text style={styles.actionLabel}>Tag</Text>
+            <Text style={styles.actionLabel}>{t('common.tag')}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Delete ${transaction.title}`}
+            accessibilityLabel={t('common.deleteFor', { title: transaction.title })}
             onPress={handleDelete}
             style={[
               styles.actionButton,
@@ -79,7 +81,7 @@ export function SwipeableTransactionRow({ transaction, onPress, onDelete, onCate
             ]}
           >
             <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
-            <Text style={styles.actionLabel}>Delete</Text>
+            <Text style={styles.actionLabel}>{t('common.delete')}</Text>
           </Pressable>
         </View>
       </Animated.View>

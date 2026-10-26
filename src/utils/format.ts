@@ -1,3 +1,7 @@
+import { Locale } from '../i18n/LocaleContext';
+
+const INTL_LOCALE: Record<Locale, string> = { en: 'en-US', id: 'id-ID' };
+
 export function formatCurrency(amount: number, currency = 'IDR') {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -6,16 +10,16 @@ export function formatCurrency(amount: number, currency = 'IDR') {
   }).format(amount);
 }
 
-export function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
+export function formatDate(iso: string, locale: Locale = 'en') {
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   }).format(new Date(iso));
 }
 
-export function formatDateTime(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
+export function formatDateTime(iso: string, locale: Locale = 'en') {
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Role = 'user' | 'assistant' | 'telegram';
 
@@ -10,14 +11,14 @@ type Props = {
   role: Role;
 };
 
-const ROLE_LABEL: Record<Role, string> = {
-  user: 'You',
-  assistant: 'Assistant',
-  telegram: 'Via Telegram',
-};
-
 export function ChatBubble({ text, role }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
+  const ROLE_LABEL: Record<Role, string> = {
+    user: t('chat.roleYou'),
+    assistant: t('chat.roleAssistant'),
+    telegram: t('chat.roleTelegram'),
+  };
   const isUser = role === 'user';
   const isTelegram = role === 'telegram';
 

@@ -3,17 +3,21 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = {
   message: string;
   onPress: () => void;
+  label?: string;
 };
 
-export function AiInsightCard({ message, onPress }: Props) {
+export function AiInsightCard({ message, onPress, label }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t } = useLocale();
+  const resolvedLabel = label ?? t('insight.label');
 
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`AI insight: ${message}`} onPress={onPress}>
+    <Pressable accessibilityRole="button" accessibilityLabel={`${resolvedLabel}: ${message}`} onPress={onPress}>
       <LinearGradient
         colors={[colors.primaryDark, colors.primary]}
         start={{ x: 0, y: 0 }}
@@ -24,7 +28,7 @@ export function AiInsightCard({ message, onPress }: Props) {
           <Ionicons name="sparkles" size={20} color="#FFFFFF" />
         </View>
         <View style={styles.textWrap}>
-          <Text style={styles.label}>AI Insight</Text>
+          <Text style={styles.label}>{resolvedLabel}</Text>
           <Text style={[styles.message, { fontSize: typography.size.sm }]}>{message}</Text>
         </View>
       </LinearGradient>

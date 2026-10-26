@@ -22,10 +22,11 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { Transaction, TransactionCategory } from '../types/transaction';
 import { RootStackParamList } from '../navigation/types';
 import { ScanViewfinder } from '../components/ScanViewfinder';
-import { CATEGORY_LABEL } from '../utils/categories';
+import { getCategoryLabel } from '../utils/categories';
 import { formatDate } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { extractReceiptFromImage, OcrError } from '../utils/ocr';
+import { useLocale } from '../i18n/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanReceipt'>;
 
@@ -35,6 +36,7 @@ const RECEIPT_CATEGORIES: TransactionCategory[] = ['food', 'shopping', 'bills', 
 
 export function ScanReceiptScreen({ navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
+  const { t, locale } = useLocale();
   const { addTransaction } = useTransactions();
   const announce = useAnnounce();
   const [permission, requestPermission] = useCameraPermissions();
@@ -291,7 +293,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
             />
             {fromDateInputValue(dateText) ? (
               <Text style={{ color: colors.textTertiary, fontSize: 11, marginTop: 2 }}>
-                {formatDate(fromDateInputValue(dateText)!)}
+                {formatDate(fromDateInputValue(dateText)!, locale)}
               </Text>
             ) : (
               <Text style={{ color: colors.dangerText, fontSize: 11, marginTop: 2 }}>
@@ -328,7 +330,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
                     ]}
                   >
                     <Text style={{ color: selected ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '600' }}>
-                      {CATEGORY_LABEL[option]}
+                      {getCategoryLabel(t, option)}
                     </Text>
                   </Pressable>
                 );
