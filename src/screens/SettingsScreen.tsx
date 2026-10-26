@@ -178,7 +178,11 @@ export function SettingsScreen() {
         <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1 }}>
           <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
           <Divider />
-          <SettingsRow icon="shield-checkmark-outline" label="Privacy policy" onPress={() => {}} />
+          <SettingsRow
+            icon="shield-checkmark-outline"
+            label="Privacy policy"
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

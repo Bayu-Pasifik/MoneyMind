@@ -17,4 +17,5 @@ export type RootStackParamList = {
   CategoryPicker: { transactionId: string };
   BudgetSettings: undefined;
   UpcomingForm: { itemId?: string } | undefined;
+  PrivacyPolicy: undefined;
 };

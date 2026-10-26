@@ -17,6 +17,7 @@ import { AddTransactionScreen } from '../screens/AddTransactionScreen';
 import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
 import { BudgetSettingsScreen } from '../screens/BudgetSettingsScreen';
 import { UpcomingFormScreen } from '../screens/UpcomingFormScreen';
+import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -116,6 +117,15 @@ export function RootNavigator() {
             <Stack.Screen
               name="UpcomingForm"
               component={UpcomingFormScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="PrivacyPolicy"
+              component={PrivacyPolicyScreen}
               options={{
                 presentation: 'modal',
                 animation: 'slide_from_bottom',
