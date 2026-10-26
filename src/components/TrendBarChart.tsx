@@ -18,12 +18,12 @@ export function TrendBarChart({ data }: Props) {
       style={styles.row}
       accessible
       accessibilityRole="image"
-      accessibilityLabel={`Daily spending, last 7 days: ${summary}`}
+      accessibilityLabel={`Spending trend: ${summary}`}
     >
-      {data.map((day) => {
+      {data.map((day, index) => {
         const heightRatio = day.total / max;
         return (
-          <View key={day.label} style={styles.column}>
+          <View key={index} style={styles.column}>
             <View style={[styles.track, { backgroundColor: colors.surfaceAlt, borderRadius: radii.sm }]}>
               <View
                 style={[

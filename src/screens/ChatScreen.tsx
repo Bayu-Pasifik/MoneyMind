@@ -16,7 +16,7 @@ import { useTransactions } from '../store/TransactionsContext';
 import { useTelegram } from '../store/TelegramContext';
 import { ChatBubble } from '../components/ChatBubble';
 import { TelegramConnectBanner } from '../components/TelegramConnectBanner';
-import { generateAssistantReply } from '../utils/chatBot';
+import { generateAssistantReply, parseAddCommand } from '../utils/chatBot';
 import { useAnnounce } from '../hooks/useAnnounce';
 
 type Message = {
@@ -26,11 +26,11 @@ type Message = {
 };
 
 const SUGGESTIONS = ['How much did I spend?', 'What is my balance?', 'Top category?'];
-const SLASH_COMMANDS = ['/summary', '/balance', '/add expense', '/budget', '/report'];
+const SLASH_COMMANDS = ['/summary', '/balance', '/add expense 20000 food Lunch', '/budget', '/report'];
 
 export function ChatScreen() {
   const { colors, spacing, radii, typography } = useTheme();
-  const { transactions } = useTransactions();
+  const { transactions, addTransaction } = useTransactions();
   const { connected } = useTelegram();
   const announce = useAnnounce();
   const [messages, setMessages] = useState<Message[]>([
@@ -47,7 +47,13 @@ export function ChatScreen() {
     if (!trimmed) return;
 
     const userMessage: Message = { id: `u-${Date.now()}`, role, text: trimmed };
-    const reply = generateAssistantReply(trimmed, transactions);
+
+    const addCommand = parseAddCommand(trimmed);
+    const reply = addCommand ? addCommand.reply : generateAssistantReply(trimmed, transactions);
+    if (addCommand?.transaction) {
+      addTransaction(addCommand.transaction);
+    }
+
     const assistantMessage: Message = { id: `a-${Date.now()}`, role: 'assistant', text: reply };
 
     setMessages((prev) => [...prev, userMessage, assistantMessage]);

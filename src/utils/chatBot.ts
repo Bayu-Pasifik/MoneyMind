@@ -1,7 +1,67 @@
-import { Transaction } from '../types/transaction';
+import { Transaction, TransactionCategory } from '../types/transaction';
 import { getCategoryBreakdown } from './analytics';
 import { CATEGORY_LABEL } from './categories';
 import { formatCurrency } from './format';
+
+const VALID_CATEGORIES: TransactionCategory[] = [
+  'food',
+  'transport',
+  'shopping',
+  'bills',
+  'health',
+  'entertainment',
+  'salary',
+  'transfer',
+  'other',
+];
+
+const ADD_COMMAND = /^\/add\s+(expense|income)\s+(\d+)(?:\s+(\S+))?(?:\s+(.*))?$/i;
+
+export type ChatCommandResult = {
+  reply: string;
+  transaction?: Transaction;
+};
+
+/**
+ * Parses "/add expense|income <amount> [category] [note]" into a Transaction.
+ * Returns null when the text isn't an /add command, so callers can fall back
+ * to the regular rule-based reply.
+ */
+export function parseAddCommand(text: string): ChatCommandResult | null {
+  const match = text.trim().match(ADD_COMMAND);
+  if (!match) return null;
+
+  const [, typeRaw, amountRaw, categoryRaw, noteRaw] = match;
+  const type = typeRaw.toLowerCase() as 'expense' | 'income';
+  const amount = Number(amountRaw);
+
+  if (!amount || amount <= 0) {
+    return { reply: 'Amount must be a positive number, e.g. "/add expense 20000 food Lunch".' };
+  }
+
+  const category: TransactionCategory = VALID_CATEGORIES.includes(categoryRaw as TransactionCategory)
+    ? (categoryRaw as TransactionCategory)
+    : 'other';
+  const note = categoryRaw && !VALID_CATEGORIES.includes(categoryRaw as TransactionCategory)
+    ? [categoryRaw, noteRaw].filter(Boolean).join(' ')
+    : noteRaw;
+
+  const transaction: Transaction = {
+    id: `chat-${Date.now()}`,
+    title: note?.trim() || (type === 'expense' ? 'Chat expense' : 'Chat income'),
+    amount,
+    type,
+    category,
+    date: new Date().toISOString(),
+    note: note?.trim() || undefined,
+    source: 'manual',
+  };
+
+  return {
+    reply: `Added ${type} of ${formatCurrency(amount)} (${CATEGORY_LABEL[category]}).`,
+    transaction,
+  };
+}
 
 /**
  * Rule-based assistant over local transaction data. No LLM/API is wired up;
@@ -18,7 +78,7 @@ export function generateAssistantReply(question: string, transactions: Transacti
     .reduce((sum, item) => sum + item.amount, 0);
 
   if (/^\/add/.test(normalized)) {
-    return 'Tap "Add Manual" on Home, or send a receipt photo here to log a new transaction.';
+    return 'Use "/add expense <amount> [category] [note]", e.g. "/add expense 20000 food Lunch at cafe".';
   }
 
   if (/^\/report/.test(normalized)) {

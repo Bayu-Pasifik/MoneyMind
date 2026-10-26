@@ -22,13 +22,25 @@ function DeltaLabel({ delta, positiveIsGood }: { delta: number | null; positiveI
   );
 }
 
+function SavingRateLabel({ summary }: { summary: PeriodSummary }) {
+  const { colors, typography } = useTheme();
+  if (summary.income <= 0) return null;
+  const rate = Math.round((summary.saved / summary.income) * 100);
+  const color = rate >= 0 ? colors.successText : colors.dangerText;
+  return (
+    <Text style={{ color, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>
+      Saving rate {rate}%
+    </Text>
+  );
+}
+
 export function SummaryCards({ summary }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
 
   const items = [
     { label: 'Spent', value: summary.spent, delta: summary.spentDelta, positiveIsGood: false },
     { label: 'Income', value: summary.income, delta: summary.incomeDelta, positiveIsGood: true },
-    { label: 'Saved', value: summary.saved, delta: null, positiveIsGood: true },
+    { label: 'Saved', value: summary.saved, delta: null, positiveIsGood: true, showRate: true },
     { label: 'Transactions', value: summary.count, delta: null, positiveIsGood: true, isCount: true },
   ];
 
@@ -49,6 +61,7 @@ export function SummaryCards({ summary }: Props) {
             {item.isCount ? item.value : formatCurrency(item.value)}
           </Text>
           {item.delta !== null ? <DeltaLabel delta={item.delta} positiveIsGood={item.positiveIsGood} /> : null}
+          {item.showRate ? <SavingRateLabel summary={summary} /> : null}
         </View>
       ))}
     </View>

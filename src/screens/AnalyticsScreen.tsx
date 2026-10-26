@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
 import { DonutChart } from '../components/DonutChart';
@@ -9,14 +11,16 @@ import { EmptyState } from '../components/EmptyState';
 import { PeriodTabs } from '../components/PeriodTabs';
 import { SummaryCards } from '../components/SummaryCards';
 import { TopMerchants } from '../components/TopMerchants';
-import { getCategoryBreakdown, getLastNDaysExpenseTotals } from '../utils/analytics';
+import { getCategoryBreakdown, getTrendTotals, TREND_CHART_TITLE } from '../utils/analytics';
 import { CATEGORY_CHART_COLORS, CATEGORY_LABEL } from '../utils/categories';
 import { formatCurrency } from '../utils/format';
 import { filterByPeriod, filterByPreviousPeriod, getTopMerchants, Period, summarizePeriod } from '../utils/period';
+import { RootStackParamList } from '../navigation/types';
 
 export function AnalyticsScreen() {
   const { colors, spacing, radii, typography } = useTheme();
   const { transactions } = useTransactions();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [period, setPeriod] = useState<Period>('month');
 
   const periodTransactions = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
@@ -31,22 +35,32 @@ export function AnalyticsScreen() {
   const topMerchants = useMemo(() => getTopMerchants(periodTransactions), [periodTransactions]);
 
   const breakdown = useMemo(() => getCategoryBreakdown(periodTransactions), [periodTransactions]);
-  const trend = useMemo(() => getLastNDaysExpenseTotals(transactions, 7), [transactions]);
+  const trend = useMemo(() => getTrendTotals(transactions, period), [transactions, period]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}>
-        <Text
-          accessibilityRole="header"
-          style={{
-            color: colors.textPrimary,
-            fontSize: typography.size.xxl,
-            fontWeight: typography.weight.bold,
-            marginBottom: spacing.lg,
-          }}
-        >
-          Analytics
-        </Text>
+        <View style={[styles.headerRow, { marginBottom: spacing.lg }]}>
+          <Text
+            accessibilityRole="header"
+            style={{
+              color: colors.textPrimary,
+              fontSize: typography.size.xxl,
+              fontWeight: typography.weight.bold,
+            }}
+          >
+            Analytics
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Export report"
+            hitSlop={8}
+            onPress={() => navigation.navigate('ExportSheet')}
+            style={[styles.exportButton, { backgroundColor: colors.surfaceAlt, borderRadius: radii.pill }]}
+          >
+            <Ionicons name="download-outline" size={18} color={colors.textPrimary} />
+          </Pressable>
+        </View>
 
         <View style={{ marginBottom: spacing.lg }}>
           <PeriodTabs value={period} onChange={setPeriod} />
@@ -63,7 +77,7 @@ export function AnalyticsScreen() {
           ]}
         >
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.md }}>
-            Last 7 days spending
+            {TREND_CHART_TITLE[period]}
           </Text>
           <TrendBarChart data={trend} />
         </View>
@@ -142,6 +156,17 @@ export function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  exportButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   card: {
     borderWidth: 1,
