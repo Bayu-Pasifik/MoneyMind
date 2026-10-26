@@ -34,13 +34,20 @@ export function SettingsRow({ icon, label, value, onPress, right }: Props) {
       >
         <Ionicons name={icon} size={18} color={colors.textSecondary} />
       </View>
-      <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, flex: 1 }}>{label}</Text>
-      {right ??
-        (value ? (
-          <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm }}>{value}</Text>
-        ) : onPress ? (
-          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-        ) : null)}
+      {value && right ? (
+        <View style={{ flex: 1, marginRight: spacing.sm }}>
+          <Text style={{ color: colors.textPrimary, fontSize: typography.size.md }}>{label}</Text>
+          <Text style={{ color: colors.textTertiary, fontSize: typography.size.xs, marginTop: 2 }}>{value}</Text>
+        </View>
+      ) : (
+        <>
+          <Text style={{ color: colors.textPrimary, fontSize: typography.size.md, flex: 1 }}>{label}</Text>
+          {value ? (
+            <Text style={{ color: colors.textTertiary, fontSize: typography.size.sm }}>{value}</Text>
+          ) : null}
+        </>
+      )}
+      {right ?? (!value && onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} /> : null)}
     </Pressable>
   );
 }

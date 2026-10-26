@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { Transaction, TransactionCategory } from '../types/transaction';
+import { NOTIFICATION_TRANSACTION_ADDED_EVENT } from '../utils/events';
 import {
   deleteTransaction,
   getAllTransactions,
@@ -101,6 +103,15 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
       setTransactions(seedTransactions);
       setIsReady(true);
     });
+  }, []);
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(NOTIFICATION_TRANSACTION_ADDED_EVENT, () => {
+      getAllTransactions()
+        .then(setTransactions)
+        .catch((error) => console.error('[db] failed to refresh after notification capture', error));
+    });
+    return () => subscription.remove();
   }, []);
 
   const addTransaction = (transaction: Transaction) => {

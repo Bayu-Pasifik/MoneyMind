@@ -17,11 +17,23 @@ const THEME_LABEL: Record<string, string> = {
   dark: 'Dark',
 };
 
+const PERMISSION_LABEL: Record<string, string> = {
+  authorized: 'Access granted',
+  denied: 'Access not granted — tap to open settings',
+  unknown: 'Access not granted — tap to open settings',
+  unsupported: 'Needs a custom Android build (not Expo Go)',
+};
+
 export function SettingsScreen() {
   const { colors, spacing, radii, typography, preference, setPreference } = useTheme();
   const announce = useAnnounce();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { enabled: captureEnabled, setEnabled: setCaptureEnabled } = useNotificationCapture();
+  const {
+    enabled: captureEnabled,
+    setEnabled: setCaptureEnabled,
+    permissionStatus,
+    requestPermission: requestNotificationPermission,
+  } = useNotificationCapture();
   const { connected: telegramConnected, username, connect, disconnect, weeklyReport, setWeeklyReport } = useTelegram();
 
   const toggleCapture = (value: boolean) => {
@@ -93,10 +105,13 @@ export function SettingsScreen() {
           <SettingsRow
             icon="flash-outline"
             label="Notification Capture"
+            value={PERMISSION_LABEL[permissionStatus]}
+            onPress={permissionStatus === 'unsupported' ? undefined : requestNotificationPermission}
             right={
               <Switch
                 value={captureEnabled}
                 onValueChange={toggleCapture}
+                disabled={permissionStatus === 'unsupported'}
                 trackColor={{ true: colors.primary }}
               />
             }

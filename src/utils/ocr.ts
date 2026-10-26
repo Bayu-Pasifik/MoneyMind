@@ -59,7 +59,7 @@ const FOOD_HINTS = /warung|restoran|resto|cafe|kedai|kopi|coffee|makan|food/i;
 const SHOPPING_HINTS = /mart|toko|store|shop|supermarket|mall/i;
 const BILLS_HINTS = /pln|listrik|pdam|telkom|indihome|wifi|internet/i;
 
-function guessCategory(text: string): TransactionCategory {
+export function guessCategory(text: string): TransactionCategory {
   if (FOOD_HINTS.test(text)) return 'food';
   if (BILLS_HINTS.test(text)) return 'bills';
   if (SHOPPING_HINTS.test(text)) return 'shopping';
