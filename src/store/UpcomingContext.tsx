@@ -8,6 +8,7 @@ import {
   insertUpcomingIfEmpty,
   updateUpcomingInDb,
 } from './database';
+import { cancelUpcomingReminder, scheduleUpcomingReminder, syncUpcomingReminders } from '../utils/upcomingNotifications';
 
 function daysFromNow(days: number): string {
   const date = new Date();
@@ -45,6 +46,9 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
       const loaded = await getAllUpcoming();
       setItems(loaded);
       setIsReady(true);
+      syncUpcomingReminders(loaded).catch((error) =>
+        console.error('[notifications] failed to sync upcoming reminders', error)
+      );
     })().catch((error) => {
       console.error('[db] failed to load upcoming', error);
       setItems(seedUpcoming);
@@ -55,6 +59,7 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
   const addItem = (item: UpcomingTransaction) => {
     setItems((prev) => [...prev, item].sort((a, b) => a.dueDate.localeCompare(b.dueDate)));
     insertUpcoming(item).catch((error) => console.error('[db] upcoming insert failed', error));
+    scheduleUpcomingReminder(item).catch((error) => console.error('[notifications] schedule failed', error));
   };
 
   const updateItem = (item: UpcomingTransaction) => {
@@ -62,11 +67,13 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
       prev.map((existing) => (existing.id === item.id ? item : existing)).sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     );
     updateUpcomingInDb(item).catch((error) => console.error('[db] upcoming update failed', error));
+    scheduleUpcomingReminder(item).catch((error) => console.error('[notifications] schedule failed', error));
   };
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
     deleteUpcoming(id).catch((error) => console.error('[db] upcoming delete failed', error));
+    cancelUpcomingReminder(id).catch((error) => console.error('[notifications] cancel failed', error));
   };
 
   /** Pushes a recurring item's due date forward by one month (used after marking it paid). */
@@ -78,6 +85,7 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
       nextDue.setMonth(nextDue.getMonth() + 1);
       const updated = { ...existing, dueDate: nextDue.toISOString() };
       updateUpcomingInDb(updated).catch((error) => console.error('[db] upcoming reschedule failed', error));
+      scheduleUpcomingReminder(updated).catch((error) => console.error('[notifications] schedule failed', error));
       return prev.map((item) => (item.id === id ? updated : item)).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     });
   };

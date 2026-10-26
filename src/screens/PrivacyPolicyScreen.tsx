@@ -22,6 +22,10 @@ const SECTIONS: Section[] = [
     body: 'When enabled, MoneyMind reads bank/e-wallet notification text on this device to suggest transactions. This stays on-device and can be turned off anytime in Settings.',
   },
   {
+    title: 'Bill reminders',
+    body: 'Upcoming bills and expected income schedule a local reminder notification on this device for their due date. Nothing is sent off-device for this.',
+  },
+  {
     title: 'Telegram integration',
     body: 'The Telegram connection in this version is a local demo: no messages are sent to or received from a real Telegram bot.',
   },
