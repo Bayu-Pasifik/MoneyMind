@@ -12,6 +12,8 @@ import { getCategoryLabel } from '../utils/categories';
 import { formatAmountInput, formatDate, parseAmountInput } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAccounts } from '../store/AccountsContext';
+import { AccountPicker } from '../components/AccountPicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UpcomingForm'>;
 
@@ -36,6 +38,8 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
     existing ? toDateInputValue(existing.dueDate) : toDateInputValue(new Date().toISOString())
   );
   const [recurring, setRecurring] = useState(existing?.recurring ?? false);
+  const { resolveId } = useAccounts();
+  const [accountId, setAccountId] = useState<string | undefined>(resolveId(existing?.accountId));
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
@@ -60,7 +64,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
     }
 
     if (existing) {
-      const updated: UpcomingTransaction = { ...existing, title: title.trim(), amount: parsedAmount, type, category, dueDate, recurring };
+      const updated: UpcomingTransaction = { ...existing, title: title.trim(), amount: parsedAmount, type, category, dueDate, recurring, accountId };
       updateItem(updated);
       announce(t('upcomingForm.updated'));
     } else {
@@ -72,6 +76,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
         category,
         dueDate,
         recurring,
+        accountId,
       };
       addItem(item);
       announce(t('upcomingForm.added'));
@@ -179,6 +184,8 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
           </View>
           <Switch value={recurring} onValueChange={setRecurring} trackColor={{ true: colors.primary }} />
         </View>
+
+        <AccountPicker value={accountId} onChange={setAccountId} />
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>{t('addTransaction.categoryLabel')}</Text>
         <View style={[styles.categoryWrap, { marginBottom: spacing.xxl }]}>

@@ -189,6 +189,12 @@ export function SettingsScreen() {
           <SettingsRow icon="cash-outline" label={t('settings.currency')} value="IDR" />
           <Divider />
           <SettingsRow
+            icon="wallet-outline"
+            label={t('settings.accounts')}
+            onPress={() => navigation.navigate('Accounts')}
+          />
+          <Divider />
+          <SettingsRow
             icon="pie-chart-outline"
             label={t('settings.budgetLimits')}
             onPress={() => navigation.navigate('BudgetSettings')}

@@ -10,6 +10,7 @@ import { getCategoryLabel } from '../utils/categories';
 import { RootStackParamList } from '../navigation/types';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAccounts } from '../store/AccountsContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TransactionDetail'>;
 
@@ -17,6 +18,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const { t, locale } = useLocale();
   const { getById, removeTransaction } = useTransactions();
+  const { getById: getAccountById, resolveId } = useAccounts();
   const announce = useAnnounce();
   const transaction = getById(route.params.transactionId);
 
@@ -30,6 +32,8 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
     );
   }
 
+  const resolvedAccountId = resolveId(transaction.accountId);
+  const accountLabel = (resolvedAccountId && getAccountById(resolvedAccountId)?.name) ?? transaction.accountName ?? '';
   const isIncome = transaction.type === 'income';
   const amountColor = isIncome ? colors.income : colors.expense;
 
@@ -71,7 +75,7 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
             marginTop: spacing.lg,
           }}
         >
-          {getCategoryLabel(t, transaction.category)} · {transaction.accountName}
+          {getCategoryLabel(t, transaction.category)} · {accountLabel}
         </Text>
         <Text
           accessibilityRole="header"

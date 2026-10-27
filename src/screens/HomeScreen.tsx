@@ -21,13 +21,16 @@ import { useUpcoming } from '../store/UpcomingContext';
 import { useWeeklyReport } from '../store/WeeklyReportContext';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAccounts } from '../store/AccountsContext';
+import { AccountBalances } from '../components/AccountBalances';
 
 const RECENT_COUNT = 5;
 
 export function HomeScreen() {
   const { colors, spacing, typography } = useTheme();
   const { t } = useLocale();
-  const { transactions, balance, totalIncome, totalExpense, addTransaction } = useTransactions();
+  const { transactions, totalIncome, totalExpense, addTransaction } = useTransactions();
+  const { totalAssets } = useAccounts();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { enabled: captureEnabled } = useNotificationCapture();
   const { items: upcomingItems, removeItem: removeUpcoming, rescheduleItem } = useUpcoming();
@@ -65,7 +68,7 @@ export function HomeScreen() {
       type: item.type,
       category: item.category,
       date: new Date().toISOString(),
-      accountName: 'Cash Wallet',
+      accountId: item.accountId,
       source: 'manual',
     });
     if (item.recurring) {
@@ -124,7 +127,10 @@ export function HomeScreen() {
             >
               {t('home.greeting')}
             </Text>
-            <BalanceHero balance={balance} income={totalIncome} expense={totalExpense} />
+            <BalanceHero balance={totalAssets} income={totalIncome} expense={totalExpense} />
+            <View style={{ marginTop: spacing.lg }}>
+              <AccountBalances onManage={() => navigation.navigate('Accounts')} />
+            </View>
             {captureEnabled && capturedToday > 0 ? (
               <View style={{ marginTop: spacing.lg }}>
                 <NotifCaptureBanner

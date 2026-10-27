@@ -16,6 +16,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { ExportPreviewCard } from '../components/ExportPreviewCard';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAccounts } from '../store/AccountsContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExportSheet'>;
 
@@ -25,6 +26,7 @@ export function ExportSheetScreen({ navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const { t, locale } = useLocale();
   const { transactions } = useTransactions();
+  const { getById: getAccountById, resolveId } = useAccounts();
   const announce = useAnnounce();
   const [range, setRange] = useState<ExportRange>('thisMonth');
   const [format, setFormat] = useState<ExportFormat>('csv');
@@ -56,7 +58,10 @@ export function ExportSheetScreen({ navigation }: Props) {
     setIsExporting(true);
     try {
       if (format === 'csv') {
-        const csv = transactionsToCsv(filtered);
+        const csv = transactionsToCsv(filtered, (item) => {
+          const id = resolveId(item.accountId);
+          return (id && getAccountById(id)?.name) ?? item.accountName;
+        });
         const fileUri = `${FileSystem.cacheDirectory}moneymind-export-${Date.now()}.csv`;
         await FileSystem.writeAsStringAsync(fileUri, csv);
         if (await Sharing.isAvailableAsync()) {

@@ -17,6 +17,9 @@ export type RootStackParamList = {
   CategoryPicker: { transactionId: string };
   BudgetSettings: undefined;
   UpcomingForm: { itemId?: string } | undefined;
+  Accounts: undefined;
+  AccountForm: { accountId?: string } | undefined;
+  AdjustBalance: { accountId: string };
   PrivacyPolicy: undefined;
   EditProfile: undefined;
   AppLockSetup: { mode: 'setup' | 'change' | 'disable' };

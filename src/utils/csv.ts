@@ -7,7 +7,10 @@ function escapeCsvField(value: string): string {
   return value;
 }
 
-export function transactionsToCsv(transactions: Transaction[]): string {
+export function transactionsToCsv(
+  transactions: Transaction[],
+  accountNameFor: (item: Transaction) => string | undefined = (item) => item.accountName
+): string {
   const header = ['Date', 'Title', 'Category', 'Type', 'Amount', 'Account'];
   const rows = transactions.map((item) => [
     item.date,
@@ -15,7 +18,7 @@ export function transactionsToCsv(transactions: Transaction[]): string {
     item.category,
     item.type,
     String(item.amount),
-    item.accountName ?? '',
+    accountNameFor(item) ?? '',
   ]);
 
   return [header, ...rows]

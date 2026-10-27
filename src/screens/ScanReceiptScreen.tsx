@@ -118,7 +118,6 @@ export function ScanReceiptScreen({ navigation }: Props) {
       category,
       date,
       receiptImageUri: photoUri,
-      accountName: 'Cash Wallet',
       source: 'scan',
     };
     addTransaction(transaction);

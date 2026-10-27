@@ -11,6 +11,8 @@ import { getCategoryLabel } from '../utils/categories';
 import { formatAmountInput, formatDate, parseAmountInput } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAccounts } from '../store/AccountsContext';
+import { AccountPicker } from '../components/AccountPicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddTransaction'>;
 
@@ -29,6 +31,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const { t, locale } = useLocale();
   const { addTransaction, updateTransaction, getById } = useTransactions();
+  const { resolveId, getById: getAccountById } = useAccounts();
   const announce = useAnnounce();
 
   const editingId = route.params?.transactionId;
@@ -41,6 +44,10 @@ export function AddTransactionScreen({ navigation, route }: Props) {
   const [category, setCategory] = useState<TransactionCategory>(existing?.category ?? 'food');
   const [dateText, setDateText] = useState(
     existing ? toDateInputValue(existing.date) : toDateInputValue(new Date().toISOString())
+  );
+
+  const [accountId, setAccountId] = useState<string | undefined>(
+    resolveId(existing?.accountId)
   );
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -73,6 +80,8 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         type,
         category,
         date,
+        accountId,
+        accountName: accountId ? getAccountById(accountId)?.name : undefined,
       };
       updateTransaction(updated);
       announce(t('addTransaction.updated'));
@@ -84,7 +93,8 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         type,
         category,
         date,
-        accountName: 'Cash Wallet',
+        accountId,
+        accountName: accountId ? getAccountById(accountId)?.name : undefined,
         source: 'manual',
       };
       addTransaction(transaction);
@@ -192,6 +202,8 @@ export function AddTransactionScreen({ navigation, route }: Props) {
             {t('addTransaction.dateInvalid', { example: toDateInputValue(new Date().toISOString()) })}
           </Text>
         )}
+
+        <AccountPicker value={accountId} onChange={setAccountId} />
 
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>
           {t('addTransaction.categoryLabel')}

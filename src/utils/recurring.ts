@@ -51,7 +51,7 @@ export function collectDueOccurrences(
       type: item.type,
       category: item.category,
       date: due,
-      accountName: 'Cash Wallet',
+      accountId: item.accountId,
       note: 'Recurring',
       source: 'manual',
     });

@@ -23,6 +23,7 @@ export type Transaction = {
   date: string; // ISO 8601
   note?: string;
   receiptImageUri?: string;
-  accountName?: string;
+  accountId?: string;
+  accountName?: string; // snapshot of the account name at save time (for CSV/legacy rows)
   source: TransactionSource;
 };

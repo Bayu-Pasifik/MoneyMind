@@ -22,6 +22,10 @@ import { UpcomingFormScreen } from '../screens/UpcomingFormScreen';
 import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
 import { AppLockSetupScreen } from '../screens/AppLockSetupScreen';
+import { AccountsProvider } from '../store/AccountsContext';
+import { AccountsScreen } from '../screens/AccountsScreen';
+import { AccountFormScreen } from '../screens/AccountFormScreen';
+import { AdjustBalanceScreen } from '../screens/AdjustBalanceScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -58,6 +62,7 @@ export function RootNavigator() {
   return (
     <TransactionsProvider>
       <DatabaseGate>
+      <AccountsProvider>
       <BudgetsProvider>
       <UpcomingProvider>
       <WeeklyReportProvider>
@@ -130,6 +135,33 @@ export function RootNavigator() {
               }}
             />
             <Stack.Screen
+              name="Accounts"
+              component={AccountsScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="AccountForm"
+              component={AccountFormScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="AdjustBalance"
+              component={AdjustBalanceScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
               name="PrivacyPolicy"
               component={PrivacyPolicyScreen}
               options={{
@@ -164,6 +196,7 @@ export function RootNavigator() {
       </WeeklyReportProvider>
       </UpcomingProvider>
       </BudgetsProvider>
+      </AccountsProvider>
       </DatabaseGate>
     </TransactionsProvider>
   );
