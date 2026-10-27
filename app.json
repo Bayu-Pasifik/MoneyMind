@@ -50,9 +50,16 @@
           "microphonePermission": false
         }
       ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "MoneyMind uses Face ID to unlock the app."
+        }
+      ],
       "expo-sharing",
       "expo-sqlite",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-secure-store"
     ]
   }
 }

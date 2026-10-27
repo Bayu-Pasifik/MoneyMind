@@ -17,6 +17,7 @@ const SECTIONS: Section[] = [
   { titleKey: 'privacy.billReminders.title', bodyKey: 'privacy.billReminders.body' },
   { titleKey: 'privacy.weeklyReport.title', bodyKey: 'privacy.weeklyReport.body' },
   ...(TELEGRAM_ENABLED ? [{ titleKey: 'privacy.telegram.title', bodyKey: 'privacy.telegram.body' } as Section] : []),
+  { titleKey: 'privacy.appLock.title', bodyKey: 'privacy.appLock.body' },
   { titleKey: 'privacy.yourControl.title', bodyKey: 'privacy.yourControl.body' },
 ];
 

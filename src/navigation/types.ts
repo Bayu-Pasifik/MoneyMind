@@ -19,4 +19,5 @@ export type RootStackParamList = {
   UpcomingForm: { itemId?: string } | undefined;
   PrivacyPolicy: undefined;
   EditProfile: undefined;
+  AppLockSetup: { mode: 'setup' | 'change' | 'disable' };
 };

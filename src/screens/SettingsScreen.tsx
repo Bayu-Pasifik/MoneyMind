@@ -12,6 +12,7 @@ import { useNotificationCapture } from '../store/NotificationCaptureContext';
 import { TELEGRAM_ENABLED } from '../config/features';
 import { useTelegram } from '../store/TelegramContext';
 import { useProfile } from '../store/ProfileContext';
+import { useAppLock } from '../store/AppLockContext';
 import { useWeeklyReport } from '../store/WeeklyReportContext';
 import { Locale, useLocale } from '../i18n/LocaleContext';
 
@@ -28,6 +29,7 @@ export function SettingsScreen() {
   } = useNotificationCapture();
   const { connected: telegramConnected, username, connect, disconnect } = useTelegram();
   const { enabled: weeklyReportEnabled, setEnabled: setWeeklyReportEnabled } = useWeeklyReport();
+  const { enabled: lockEnabled, biometricEnabled, biometricAvailable, setBiometricEnabled } = useAppLock();
   const { profile } = useProfile();
   const displayName = profile.name || t('settings.profileNameEmpty');
   const displayEmail = profile.email || (profile.name ? '' : t('settings.profileEmailEmpty'));
@@ -197,6 +199,53 @@ export function SettingsScreen() {
             label={t('settings.exportTransactions')}
             onPress={() => navigation.navigate('ExportSheet')}
           />
+        </View>
+
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
+          {t('settings.sectionSecurity')}
+        </Text>
+        <View style={{ backgroundColor: colors.surface, marginHorizontal: spacing.lg, borderRadius: radii.card, borderColor: colors.border, borderWidth: 1, marginBottom: spacing.xl }}>
+          <SettingsRow
+            icon="lock-closed-outline"
+            label={t('settings.appLock')}
+            value={t('settings.appLockSubtitle')}
+            right={
+              <Switch
+                value={lockEnabled}
+                onValueChange={(value) => navigation.navigate('AppLockSetup', { mode: value ? 'setup' : 'disable' })}
+                trackColor={{ true: colors.primary }}
+              />
+            }
+          />
+          {lockEnabled ? (
+            <>
+              <Divider />
+              <SettingsRow
+                icon="keypad-outline"
+                label={t('settings.changePin')}
+                onPress={() => navigation.navigate('AppLockSetup', { mode: 'change' })}
+              />
+              {biometricAvailable ? (
+                <>
+                  <Divider />
+                  <SettingsRow
+                    icon="finger-print-outline"
+                    label={t('settings.biometricUnlock')}
+                    right={
+                      <Switch
+                        value={biometricEnabled}
+                        onValueChange={(value) => {
+                          setBiometricEnabled(value).catch(() => {});
+                          announce(value ? 'Biometric unlock enabled' : 'Biometric unlock disabled');
+                        }}
+                        trackColor={{ true: colors.primary }}
+                      />
+                    }
+                  />
+                </>
+              ) : null}
+            </>
+          ) : null}
         </View>
 
         {captureEnabled ? (

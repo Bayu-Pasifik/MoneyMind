@@ -21,6 +21,7 @@ import { BudgetSettingsScreen } from '../screens/BudgetSettingsScreen';
 import { UpcomingFormScreen } from '../screens/UpcomingFormScreen';
 import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
+import { AppLockSetupScreen } from '../screens/AppLockSetupScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -140,6 +141,15 @@ export function RootNavigator() {
             <Stack.Screen
               name="EditProfile"
               component={EditProfileScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="AppLockSetup"
+              component={AppLockSetupScreen}
               options={{
                 presentation: 'modal',
                 animation: 'slide_from_bottom',
