@@ -6,7 +6,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useBudgets } from '../store/BudgetsContext';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { getCategoryLabel } from '../utils/categories';
-import { formatCurrency } from '../utils/format';
+import { formatAmountInput, formatCurrency, parseAmountInput } from '../utils/format';
 import { BUDGETABLE_CATEGORIES } from '../utils/budgets';
 import { TransactionCategory } from '../types/transaction';
 import { useLocale } from '../i18n/LocaleContext';
@@ -21,11 +21,11 @@ export function BudgetSettingsScreen() {
 
   const getDisplayValue = (category: TransactionCategory) => {
     if (drafts[category] !== undefined) return drafts[category] as string;
-    return budgets[category] !== undefined ? String(budgets[category]) : '';
+    return budgets[category] !== undefined ? formatAmountInput(String(budgets[category]), false) : '';
   };
 
   const handleChange = (category: TransactionCategory, text: string) => {
-    setDrafts((prev) => ({ ...prev, [category]: text }));
+    setDrafts((prev) => ({ ...prev, [category]: formatAmountInput(text, false) }));
   };
 
   const handleBlur = (category: TransactionCategory) => {
@@ -36,8 +36,8 @@ export function BudgetSettingsScreen() {
       removeLimit(category);
       announce(t('budgetSettings.removedAnnounce', { category: getCategoryLabel(t, category) }));
     } else {
-      const parsed = Number(trimmed);
-      if (Number.isFinite(parsed) && parsed > 0) {
+      const parsed = parseAmountInput(trimmed);
+      if (parsed > 0) {
         setLimit(category, parsed);
         announce(t('budgetSettings.setAnnounce', { category: getCategoryLabel(t, category), amount: formatCurrency(parsed) }));
       }

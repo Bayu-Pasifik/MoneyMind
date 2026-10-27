@@ -10,6 +10,19 @@ export function formatCurrency(amount: number, currency = 'IDR') {
   }).format(amount);
 }
 
+// Live-typing helper: keeps digits only and groups thousands with dots ("2000000" -> "Rp 2.000.000").
+export function formatAmountInput(raw: string, withPrefix = true) {
+  const digits = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (!digits) return '';
+  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return withPrefix ? `Rp ${grouped}` : grouped;
+}
+
+export function parseAmountInput(text: string) {
+  const digits = text.replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 export function formatDate(iso: string, locale: Locale = 'en') {
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     day: 'numeric',

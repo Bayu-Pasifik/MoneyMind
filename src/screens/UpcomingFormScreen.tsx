@@ -9,7 +9,7 @@ import { RootStackParamList } from '../navigation/types';
 import { TransactionCategory, TransactionType } from '../types/transaction';
 import { UpcomingTransaction } from '../types/upcoming';
 import { getCategoryLabel } from '../utils/categories';
-import { formatDate } from '../utils/format';
+import { formatAmountInput, formatDate, parseAmountInput } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { useLocale } from '../i18n/LocaleContext';
 
@@ -30,7 +30,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
 
   const [type, setType] = useState<TransactionType>(existing?.type ?? 'expense');
   const [title, setTitle] = useState(existing?.title ?? '');
-  const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
+  const [amount, setAmount] = useState(existing ? formatAmountInput(String(existing.amount)) : '');
   const [category, setCategory] = useState<TransactionCategory>(existing?.category ?? 'bills');
   const [dateText, setDateText] = useState(
     existing ? toDateInputValue(existing.dueDate) : toDateInputValue(new Date().toISOString())
@@ -48,7 +48,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
   };
 
   const handleSave = () => {
-    const parsedAmount = Number(amount);
+    const parsedAmount = parseAmountInput(amount);
     const dueDate = fromDateInputValue(dateText);
     if (!title.trim() || !parsedAmount || parsedAmount <= 0) {
       announce(t('upcomingForm.validationMissing'));
@@ -139,7 +139,7 @@ export function UpcomingFormScreen({ navigation, route }: Props) {
         <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginBottom: spacing.xs }}>{t('addTransaction.amountLabel')}</Text>
         <TextInput
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={(text) => setAmount(formatAmountInput(text))}
           accessibilityLabel={t('addTransaction.amountLabel')}
           placeholder="0"
           placeholderTextColor={colors.textTertiary}

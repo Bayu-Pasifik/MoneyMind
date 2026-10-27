@@ -23,7 +23,7 @@ import { Transaction, TransactionCategory } from '../types/transaction';
 import { RootStackParamList } from '../navigation/types';
 import { ScanViewfinder } from '../components/ScanViewfinder';
 import { getCategoryLabel } from '../utils/categories';
-import { formatDate } from '../utils/format';
+import { formatAmountInput, formatDate, parseAmountInput } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { extractReceiptFromImage, OcrError } from '../utils/ocr';
 import { useLocale } from '../i18n/LocaleContext';
@@ -58,7 +58,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
     try {
       const extracted = await extractReceiptFromImage(uri);
       setMerchant(extracted.merchant);
-      setAmount(String(extracted.amount));
+      setAmount(formatAmountInput(String(extracted.amount)));
       setCategory(extracted.category);
       setItemCount(extracted.itemCount);
       setDateText(toDateInputValue(new Date().toISOString()));
@@ -99,7 +99,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
   };
 
   const handleSave = () => {
-    const parsedAmount = Number(amount);
+    const parsedAmount = parseAmountInput(amount);
     if (!merchant.trim() || !parsedAmount || parsedAmount <= 0) {
       announce('Enter a merchant and a valid amount before saving');
       return;
@@ -359,7 +359,7 @@ export function ScanReceiptScreen({ navigation }: Props) {
         </Text>
         <TextInput
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={(text) => setAmount(formatAmountInput(text))}
           accessibilityLabel="Amount"
           placeholder="0"
           placeholderTextColor={colors.textTertiary}

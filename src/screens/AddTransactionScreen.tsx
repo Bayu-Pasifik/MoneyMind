@@ -8,7 +8,7 @@ import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { Transaction, TransactionCategory, TransactionType } from '../types/transaction';
 import { getCategoryLabel } from '../utils/categories';
-import { formatDate } from '../utils/format';
+import { formatAmountInput, formatDate, parseAmountInput } from '../utils/format';
 import { fromDateInputValue, toDateInputValue } from '../utils/dateInput';
 import { useLocale } from '../i18n/LocaleContext';
 
@@ -37,7 +37,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
 
   const [type, setType] = useState<TransactionType>(existing?.type ?? 'expense');
   const [title, setTitle] = useState(existing?.title ?? '');
-  const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
+  const [amount, setAmount] = useState(existing ? formatAmountInput(String(existing.amount)) : '');
   const [category, setCategory] = useState<TransactionCategory>(existing?.category ?? 'food');
   const [dateText, setDateText] = useState(
     existing ? toDateInputValue(existing.date) : toDateInputValue(new Date().toISOString())
@@ -54,7 +54,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
   };
 
   const handleSave = () => {
-    const parsedAmount = Number(amount);
+    const parsedAmount = parseAmountInput(amount);
     if (!title.trim() || !parsedAmount || parsedAmount <= 0) {
       announce(t('addTransaction.validationMissing'));
       return;
@@ -158,7 +158,7 @@ export function AddTransactionScreen({ navigation, route }: Props) {
         </Text>
         <TextInput
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={(text) => setAmount(formatAmountInput(text))}
           accessibilityLabel={t('addTransaction.amountLabel')}
           placeholder="0"
           placeholderTextColor={colors.textTertiary}
