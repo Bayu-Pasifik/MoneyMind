@@ -7,7 +7,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.moneymind.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +21,16 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.moneymind.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.CAMERA",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ],
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -25,13 +39,15 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "MoneyMind uses the camera to scan receipts."
+          "cameraPermission": "MoneyMind uses the camera to scan receipts.",
+          "recordAudioAndroid": false
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "MoneyMind uses your photos to attach receipt images."
+          "photosPermission": "MoneyMind uses your photos to attach receipt images.",
+          "microphonePermission": false
         }
       ],
       "expo-sharing",
