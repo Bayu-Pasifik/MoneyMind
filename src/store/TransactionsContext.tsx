@@ -74,6 +74,7 @@ type TransactionsContextValue = {
   transactions: Transaction[];
   isReady: boolean;
   getById: (id: string) => Transaction | undefined;
+  refresh: () => Promise<void>;
   addTransaction: (transaction: Transaction) => void;
   removeTransaction: (id: string) => void;
   updateTransaction: (transaction: Transaction) => void;
@@ -113,6 +114,14 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
     });
     return () => subscription.remove();
   }, []);
+
+  const refresh = async () => {
+    try {
+      setTransactions(await getAllTransactions());
+    } catch (error) {
+      console.error('[db] failed to refresh transactions', error);
+    }
+  };
 
   const addTransaction = (transaction: Transaction) => {
     setTransactions((prev) => [transaction, ...prev]);
@@ -167,6 +176,7 @@ export function TransactionsProvider({ children }: { children: React.ReactNode }
       transactions,
       isReady,
       getById,
+      refresh,
       addTransaction,
       removeTransaction,
       updateTransaction,

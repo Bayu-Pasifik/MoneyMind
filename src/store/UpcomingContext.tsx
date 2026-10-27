@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { UpcomingTransaction } from '../types/upcoming';
 import {
   deleteUpcoming,
@@ -6,8 +7,11 @@ import {
   initDatabase,
   insertUpcoming,
   insertUpcomingIfEmpty,
+  postRecurringOccurrences,
   updateUpcomingInDb,
 } from './database';
+import { useTransactions } from './TransactionsContext';
+import { addMonthsClamped, collectDueOccurrences } from '../utils/recurring';
 import { cancelUpcomingReminder, scheduleUpcomingReminder, syncUpcomingReminders } from '../utils/upcomingNotifications';
 
 function daysFromNow(days: number): string {
@@ -38,6 +42,38 @@ const UpcomingContext = createContext<UpcomingContextValue | undefined>(undefine
 export function UpcomingProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<UpcomingTransaction[]>([]);
   const [isReady, setIsReady] = useState(false);
+  const { refresh: refreshTransactions } = useTransactions();
+  const refreshRef = useRef(refreshTransactions);
+  refreshRef.current = refreshTransactions;
+  const processingRef = useRef(false);
+
+  /** Posts a transaction for every recurring cycle that is due, then advances the item. Safe to call repeatedly. */
+  const processDueRecurring = useCallback(async () => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    try {
+      const current = await getAllUpcoming();
+      const now = new Date();
+      let posted = false;
+      for (const item of current) {
+        const result = collectDueOccurrences(item, now);
+        if (!result) continue;
+        await postRecurringOccurrences(result.transactions, item.id, result.nextDueDate);
+        posted = true;
+      }
+      if (!posted) return;
+      const reloaded = await getAllUpcoming();
+      setItems(reloaded);
+      await refreshRef.current();
+      syncUpcomingReminders(reloaded).catch((error) =>
+        console.error('[notifications] failed to sync upcoming reminders', error)
+      );
+    } catch (error) {
+      console.error('[recurring] failed to post due recurring items', error);
+    } finally {
+      processingRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -49,12 +85,21 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
       syncUpcomingReminders(loaded).catch((error) =>
         console.error('[notifications] failed to sync upcoming reminders', error)
       );
+      await processDueRecurring();
     })().catch((error) => {
       console.error('[db] failed to load upcoming', error);
       setItems(seedUpcoming);
       setIsReady(true);
     });
-  }, []);
+  }, [processDueRecurring]);
+
+  // App can stay open across a due date, so re-check whenever it returns to the foreground.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && isReady) processDueRecurring();
+    });
+    return () => subscription.remove();
+  }, [isReady, processDueRecurring]);
 
   const addItem = (item: UpcomingTransaction) => {
     setItems((prev) => [...prev, item].sort((a, b) => a.dueDate.localeCompare(b.dueDate)));
@@ -78,16 +123,12 @@ export function UpcomingProvider({ children }: { children: React.ReactNode }) {
 
   /** Pushes a recurring item's due date forward by one month (used after marking it paid). */
   const rescheduleItem = (id: string) => {
-    setItems((prev) => {
-      const existing = prev.find((item) => item.id === id);
-      if (!existing) return prev;
-      const nextDue = new Date(existing.dueDate);
-      nextDue.setMonth(nextDue.getMonth() + 1);
-      const updated = { ...existing, dueDate: nextDue.toISOString() };
-      updateUpcomingInDb(updated).catch((error) => console.error('[db] upcoming reschedule failed', error));
-      scheduleUpcomingReminder(updated).catch((error) => console.error('[notifications] schedule failed', error));
-      return prev.map((item) => (item.id === id ? updated : item)).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    });
+    const existing = items.find((item) => item.id === id);
+    if (!existing) return;
+    const updated = { ...existing, dueDate: addMonthsClamped(existing.dueDate, 1) };
+    setItems((prev) => prev.map((item) => (item.id === id ? updated : item)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)));
+    updateUpcomingInDb(updated).catch((error) => console.error('[db] upcoming reschedule failed', error));
+    scheduleUpcomingReminder(updated).catch((error) => console.error('[notifications] schedule failed', error));
   };
 
   const getById = (id: string) => items.find((item) => item.id === id);

@@ -106,6 +106,43 @@ export async function insertTransaction(transaction: Transaction): Promise<void>
   );
 }
 
+/**
+ * Posts recurring occurrences and advances the upcoming item in ONE SQL transaction.
+ * INSERT OR IGNORE on the deterministic id means a retry after a crash cannot duplicate a cycle.
+ */
+export async function postRecurringOccurrences(
+  transactions: Transaction[],
+  upcomingId: string,
+  nextDueDate: string
+): Promise<void> {
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    for (const transaction of transactions) {
+      await db.runAsync(
+        `INSERT OR IGNORE INTO transactions (id, title, merchant, amount, type, category, date, note, receiptImageUri, accountName, source)
+         VALUES ($id, $title, $merchant, $amount, $type, $category, $date, $note, $receiptImageUri, $accountName, $source);`,
+        {
+          $id: transaction.id,
+          $title: transaction.title,
+          $merchant: transaction.merchant ?? null,
+          $amount: transaction.amount,
+          $type: transaction.type,
+          $category: transaction.category,
+          $date: transaction.date,
+          $note: transaction.note ?? null,
+          $receiptImageUri: transaction.receiptImageUri ?? null,
+          $accountName: transaction.accountName ?? null,
+          $source: transaction.source,
+        }
+      );
+    }
+    await db.runAsync('UPDATE upcoming SET dueDate = $dueDate WHERE id = $id;', {
+      $dueDate: nextDueDate,
+      $id: upcomingId,
+    });
+  });
+}
+
 export async function insertTransactionsIfEmpty(seed: Transaction[]): Promise<void> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM transactions;');
