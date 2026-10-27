@@ -21,7 +21,7 @@ const INCOME_HINTS = /kredit|terima|masuk|transfer\s*masuk|top\s*up\s*berhasil|r
 // are worth parsing. Anything outside this list is ignored even if it
 // happens to contain a currency-shaped number, to avoid false positives
 // from games, shopping apps, etc.
-const FINANCE_APP_HINTS = /bank|bca|bri|bni|mandiri|cimb|permata|danamon|btn|dana\.id|gojek|gopay|ovo|shopee|linkaja|jenius|jago|flip|livin|wallet|neo/i;
+const FINANCE_APP_HINTS = /bank|bca|bri|bni|mandiri|cimb|permata|danamon|btn|id\.dana|gojek|gopay|ovo|shopee|linkaja|jenius|jago|flip|livin|wallet|neo/i;
 
 function extractAmount(text: string): number | null {
   const match = text.match(CURRENCY_TOKEN);
