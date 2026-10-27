@@ -1,8 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { TransactionCategory } from '../types/transaction';
 
-const OCR_SPACE_ENDPOINT = 'https://api.ocr.space/parse/image';
-const API_KEY = process.env.EXPO_PUBLIC_OCR_SPACE_API_KEY;
+// The OCR.space API key lives in the proxy (server/ocr-proxy), never in the
+// app bundle — EXPO_PUBLIC_* vars are inlined into the client.
+const OCR_PROXY_URL = process.env.EXPO_PUBLIC_OCR_PROXY_URL;
 
 export type OcrReceiptResult = {
   merchant: string;
@@ -22,21 +23,17 @@ export class OcrError extends Error {}
  * paid engine so the review screen keeps every field editable.
  */
 export async function extractReceiptFromImage(uri: string): Promise<OcrReceiptResult> {
-  if (!API_KEY) {
-    throw new OcrError('Missing EXPO_PUBLIC_OCR_SPACE_API_KEY — add it to .env and restart the dev server.');
+  if (!OCR_PROXY_URL) {
+    throw new OcrError('Missing EXPO_PUBLIC_OCR_PROXY_URL — add it to .env and restart the dev server.');
   }
 
   const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
 
-  const form = new FormData();
-  form.append('apikey', API_KEY);
-  form.append('base64Image', `data:image/jpeg;base64,${base64}`);
-  form.append('language', 'eng');
-  form.append('OCREngine', '2');
-  form.append('scale', 'true');
-  form.append('isTable', 'true');
-
-  const response = await fetch(OCR_SPACE_ENDPOINT, { method: 'POST', body: form });
+  const response = await fetch(OCR_PROXY_URL, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ base64Image: `data:image/jpeg;base64,${base64}` }),
+  });
   if (!response.ok) {
     throw new OcrError(`OCR request failed with status ${response.status}`);
   }
