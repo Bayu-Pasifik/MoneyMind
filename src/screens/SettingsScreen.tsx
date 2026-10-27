@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
 import { TELEGRAM_ENABLED } from '../config/features';
 import { useTelegram } from '../store/TelegramContext';
+import { useProfile } from '../store/ProfileContext';
 import { useWeeklyReport } from '../store/WeeklyReportContext';
 import { Locale, useLocale } from '../i18n/LocaleContext';
 
@@ -27,6 +28,10 @@ export function SettingsScreen() {
   } = useNotificationCapture();
   const { connected: telegramConnected, username, connect, disconnect } = useTelegram();
   const { enabled: weeklyReportEnabled, setEnabled: setWeeklyReportEnabled } = useWeeklyReport();
+  const { profile } = useProfile();
+  const displayName = profile.name || t('settings.profileNameEmpty');
+  const displayEmail = profile.email || (profile.name ? '' : t('settings.profileEmailEmpty'));
+  const avatarInitial = (profile.name.trim().charAt(0) || '?').toUpperCase();
 
   const THEME_LABEL: Record<ThemePreference, string> = {
     system: t('settings.themeSystem'),
@@ -92,26 +97,36 @@ export function SettingsScreen() {
           {t('settings.title')}
         </Text>
 
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.editProfile')}
+          onPress={() => navigation.navigate('EditProfile')}
+          style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}
+        >
         <LinearGradient
           colors={[colors.primary, colors.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[styles.profileCard, { marginHorizontal: spacing.lg, borderRadius: radii.xl, padding: spacing.lg, marginBottom: spacing.xl }]}
+          style={[styles.profileCard, { borderRadius: radii.xl, padding: spacing.lg }]}
         >
           <View style={[styles.avatar, { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.pill }]}>
             <Text style={{ color: '#FFFFFF', fontSize: typography.size.lg, fontWeight: typography.weight.bold }}>
-              M
+              {avatarInitial}
             </Text>
           </View>
-          <View style={{ marginLeft: spacing.md }}>
+          <View style={{ marginLeft: spacing.md, flex: 1 }}>
             <Text style={{ color: '#FFFFFF', fontSize: typography.size.md, fontWeight: typography.weight.semibold }}>
-              {t('settings.profileName')}
+              {displayName}
             </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: typography.size.sm }}>
-              {t('settings.profileEmail')}
-            </Text>
+            {displayEmail ? (
+              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: typography.size.sm }} numberOfLines={1}>
+                {displayEmail}
+              </Text>
+            ) : null}
           </View>
+          <Ionicons name="create-outline" size={20} color="rgba(255,255,255,0.85)" />
         </LinearGradient>
+        </Pressable>
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
           {t('settings.sectionPreferences')}

@@ -18,4 +18,5 @@ export type RootStackParamList = {
   BudgetSettings: undefined;
   UpcomingForm: { itemId?: string } | undefined;
   PrivacyPolicy: undefined;
+  EditProfile: undefined;
 };

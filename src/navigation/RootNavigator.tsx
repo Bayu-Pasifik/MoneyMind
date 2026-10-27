@@ -9,6 +9,7 @@ import { TelegramProvider } from '../store/TelegramContext';
 import { BudgetsProvider } from '../store/BudgetsContext';
 import { UpcomingProvider } from '../store/UpcomingContext';
 import { WeeklyReportProvider } from '../store/WeeklyReportContext';
+import { ProfileProvider } from '../store/ProfileContext';
 import { RootStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { TransactionDetailScreen } from '../screens/TransactionDetailScreen';
@@ -19,6 +20,7 @@ import { CategoryPickerScreen } from '../screens/CategoryPickerScreen';
 import { BudgetSettingsScreen } from '../screens/BudgetSettingsScreen';
 import { UpcomingFormScreen } from '../screens/UpcomingFormScreen';
 import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
+import { EditProfileScreen } from '../screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -59,6 +61,7 @@ export function RootNavigator() {
       <UpcomingProvider>
       <WeeklyReportProvider>
       <NotificationCaptureProvider>
+      <ProfileProvider>
       <TelegramProvider>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
@@ -134,9 +137,19 @@ export function RootNavigator() {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </TelegramProvider>
+      </ProfileProvider>
       </NotificationCaptureProvider>
       </WeeklyReportProvider>
       </UpcomingProvider>
