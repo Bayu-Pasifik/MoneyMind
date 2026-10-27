@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { Account, AccountAdjustment } from '../types/account';
 import { computeAccountBalances, DEFAULT_ACCOUNT_ID, resolveAccountId, SEED_ACCOUNTS, sumBalances } from '../utils/accounts';
 import { useTransactions } from './TransactionsContext';
+import { useGoals } from './GoalsContext';
 import {
   deleteAccountInDb,
   deleteAdjustment,
@@ -17,7 +18,12 @@ type AccountsContextValue = {
   accounts: Account[];
   adjustments: AccountAdjustment[];
   balances: Record<string, number>;
+  /** Accounts total plus money held in goals. */
   totalAssets: number;
+  /** Sum of account balances only (money not set aside in goals). */
+  accountsTotal: number;
+  /** Money set aside in goals. */
+  goalsTotal: number;
   getById: (id: string) => Account | undefined;
   /** Account a transaction/upcoming item counts toward (falls back to the default account). */
   resolveId: (accountId: string | undefined) => string | undefined;
@@ -33,6 +39,7 @@ const AccountsContext = createContext<AccountsContextValue | undefined>(undefine
 
 export function AccountsProvider({ children }: { children: React.ReactNode }) {
   const { transactions } = useTransactions();
+  const { entries, totalSaved: goalsTotal } = useGoals();
   const [accounts, setAccounts] = useState<Account[]>(SEED_ACCOUNTS);
   const [adjustments, setAdjustments] = useState<AccountAdjustment[]>([]);
 
@@ -81,10 +88,12 @@ export function AccountsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const balances = useMemo(
-    () => computeAccountBalances(accounts, transactions, adjustments),
-    [accounts, transactions, adjustments]
+    () => computeAccountBalances(accounts, transactions, adjustments, entries),
+    [accounts, transactions, adjustments, entries]
   );
-  const totalAssets = useMemo(() => sumBalances(balances), [balances]);
+  const accountsTotal = useMemo(() => sumBalances(balances), [balances]);
+  // Money in goals still counts as an asset; it just isn't spendable from an account.
+  const totalAssets = accountsTotal + goalsTotal;
 
   const value = useMemo<AccountsContextValue>(
     () => ({
@@ -92,6 +101,8 @@ export function AccountsProvider({ children }: { children: React.ReactNode }) {
       adjustments,
       balances,
       totalAssets,
+      accountsTotal,
+      goalsTotal,
       getById: (id) => accounts.find((item) => item.id === id),
       resolveId: (accountId) => resolveAccountId(accountId, accounts),
       addAccount,
@@ -100,7 +111,7 @@ export function AccountsProvider({ children }: { children: React.ReactNode }) {
       addAdjustment,
       removeAdjustment,
     }),
-    [accounts, adjustments, balances, totalAssets]
+    [accounts, adjustments, balances, totalAssets, accountsTotal, goalsTotal]
   );
 
   return <AccountsContext.Provider value={value}>{children}</AccountsContext.Provider>;

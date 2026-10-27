@@ -195,6 +195,12 @@ export function SettingsScreen() {
           />
           <Divider />
           <SettingsRow
+            icon="flag-outline"
+            label={t('settings.goals')}
+            onPress={() => navigation.navigate('Goals')}
+          />
+          <Divider />
+          <SettingsRow
             icon="pie-chart-outline"
             label={t('settings.budgetLimits')}
             onPress={() => navigation.navigate('BudgetSettings')}

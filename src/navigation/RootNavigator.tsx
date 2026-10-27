@@ -26,6 +26,10 @@ import { AccountsProvider } from '../store/AccountsContext';
 import { AccountsScreen } from '../screens/AccountsScreen';
 import { AccountFormScreen } from '../screens/AccountFormScreen';
 import { AdjustBalanceScreen } from '../screens/AdjustBalanceScreen';
+import { GoalsProvider } from '../store/GoalsContext';
+import { GoalsScreen } from '../screens/GoalsScreen';
+import { GoalFormScreen } from '../screens/GoalFormScreen';
+import { GoalMoveScreen } from '../screens/GoalMoveScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -62,6 +66,7 @@ export function RootNavigator() {
   return (
     <TransactionsProvider>
       <DatabaseGate>
+      <GoalsProvider>
       <AccountsProvider>
       <BudgetsProvider>
       <UpcomingProvider>
@@ -162,6 +167,33 @@ export function RootNavigator() {
               }}
             />
             <Stack.Screen
+              name="Goals"
+              component={GoalsScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="GoalForm"
+              component={GoalFormScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="GoalMove"
+              component={GoalMoveScreen}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
               name="PrivacyPolicy"
               component={PrivacyPolicyScreen}
               options={{
@@ -197,6 +229,7 @@ export function RootNavigator() {
       </UpcomingProvider>
       </BudgetsProvider>
       </AccountsProvider>
+      </GoalsProvider>
       </DatabaseGate>
     </TransactionsProvider>
   );

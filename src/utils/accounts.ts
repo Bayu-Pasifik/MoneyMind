@@ -1,4 +1,5 @@
 import { Account, AccountAdjustment } from '../types/account';
+import { GoalEntry } from '../types/goal';
 import { Transaction } from '../types/transaction';
 
 /** Transactions without an accountId (older rows, notification capture) belong to this account. */
@@ -18,11 +19,12 @@ export function resolveAccountId(accountId: string | undefined, accounts: Accoun
   return accounts.find((account) => account.id === DEFAULT_ACCOUNT_ID)?.id ?? accounts[0]?.id;
 }
 
-/** Balance per account id: opening balance + income - expense + adjustments. */
+/** Balance per account id: opening balance + income - expense + adjustments - money moved into goals. */
 export function computeAccountBalances(
   accounts: Account[],
   transactions: Transaction[],
-  adjustments: AccountAdjustment[]
+  adjustments: AccountAdjustment[],
+  goalEntries: GoalEntry[] = []
 ): Record<string, number> {
   const balances: Record<string, number> = {};
   for (const account of accounts) {
@@ -37,6 +39,11 @@ export function computeAccountBalances(
     if (adjustment.accountId in balances) {
       balances[adjustment.accountId] += adjustment.amount;
     }
+  }
+  for (const entry of goalEntries) {
+    const id = resolveAccountId(entry.accountId, accounts);
+    if (id === undefined) continue;
+    balances[id] -= entry.amount;
   }
   return balances;
 }

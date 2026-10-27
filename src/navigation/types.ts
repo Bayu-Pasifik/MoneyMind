@@ -20,6 +20,9 @@ export type RootStackParamList = {
   Accounts: undefined;
   AccountForm: { accountId?: string } | undefined;
   AdjustBalance: { accountId: string };
+  Goals: undefined;
+  GoalForm: { goalId?: string } | undefined;
+  GoalMove: { goalId: string; mode: 'deposit' | 'withdraw' };
   PrivacyPolicy: undefined;
   EditProfile: undefined;
   AppLockSetup: { mode: 'setup' | 'change' | 'disable' };

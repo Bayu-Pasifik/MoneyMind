@@ -14,7 +14,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Accounts'>;
 export function AccountsScreen({ navigation }: Props) {
   const { colors, spacing, radii, typography } = useTheme();
   const { t } = useLocale();
-  const { accounts, balances, totalAssets } = useAccounts();
+  const { accounts, balances, totalAssets, accountsTotal, goalsTotal } = useAccounts();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -34,6 +34,9 @@ export function AccountsScreen({ navigation }: Props) {
           <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm }}>{t('balance.total')}</Text>
           <Text style={{ color: colors.textPrimary, fontSize: typography.size.xl, fontWeight: typography.weight.bold }}>
             {formatCurrency(totalAssets)}
+          </Text>
+          <Text style={{ color: colors.textSecondary, fontSize: typography.size.sm, marginTop: spacing.xs }}>
+            {t('accounts.inAccounts')}: {formatCurrency(accountsTotal)} · {t('accounts.inGoals')}: {formatCurrency(goalsTotal)}
           </Text>
         </View>
 

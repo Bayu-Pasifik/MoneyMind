@@ -2,6 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { Transaction, TransactionCategory } from '../types/transaction';
 import { UpcomingTransaction } from '../types/upcoming';
 import { Account, AccountAdjustment } from '../types/account';
+import { Goal, GoalEntry } from '../types/goal';
 
 const DB_NAME = 'moneymind.db';
 
@@ -59,6 +60,23 @@ export async function initDatabase(): Promise<void> {
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS account_adjustments (
       id TEXT PRIMARY KEY NOT NULL,
+      accountId TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS goals (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      targetAmount REAL NOT NULL,
+      sortOrder INTEGER NOT NULL
+    );
+  `);
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS goal_entries (
+      id TEXT PRIMARY KEY NOT NULL,
+      goalId TEXT NOT NULL,
       accountId TEXT NOT NULL,
       amount REAL NOT NULL,
       date TEXT NOT NULL
@@ -418,4 +436,48 @@ export async function insertAdjustment(adjustment: AccountAdjustment): Promise<v
 export async function deleteAdjustment(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM account_adjustments WHERE id = $id;', { $id: id });
+}
+
+export async function getAllGoals(): Promise<Goal[]> {
+  const db = await getDb();
+  return db.getAllAsync<Goal>('SELECT id, name, targetAmount FROM goals ORDER BY sortOrder ASC;');
+}
+
+export async function insertGoal(goal: Goal, sortOrder: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO goals (id, name, targetAmount, sortOrder) VALUES ($id, $name, $targetAmount, $sortOrder);`,
+    { $id: goal.id, $name: goal.name, $targetAmount: goal.targetAmount, $sortOrder: sortOrder }
+  );
+}
+
+export async function updateGoalInDb(goal: Goal): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE goals SET name = $name, targetAmount = $targetAmount WHERE id = $id;', {
+    $id: goal.id,
+    $name: goal.name,
+    $targetAmount: goal.targetAmount,
+  });
+}
+
+/** Removes the goal and its entries in one SQL transaction; the money returns to the accounts it came from. */
+export async function deleteGoalInDb(id: string): Promise<void> {
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM goal_entries WHERE goalId = $id;', { $id: id });
+    await db.runAsync('DELETE FROM goals WHERE id = $id;', { $id: id });
+  });
+}
+
+export async function getAllGoalEntries(): Promise<GoalEntry[]> {
+  const db = await getDb();
+  return db.getAllAsync<GoalEntry>('SELECT * FROM goal_entries ORDER BY date DESC;');
+}
+
+export async function insertGoalEntry(entry: GoalEntry): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO goal_entries (id, goalId, accountId, amount, date) VALUES ($id, $goalId, $accountId, $amount, $date);`,
+    { $id: entry.id, $goalId: entry.goalId, $accountId: entry.accountId, $amount: entry.amount, $date: entry.date }
+  );
 }
