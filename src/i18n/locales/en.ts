@@ -184,7 +184,7 @@ export const en = {
   'privacy.telegram.title': 'Telegram integration',
   'privacy.telegram.body': 'The Telegram connection in this version is a local demo: no messages are sent to or received from a real Telegram bot.',
   'privacy.yourControl.title': 'Your control',
-  'privacy.yourControl.body': 'You can edit or delete any transaction, and disable notification capture, the weekly report, or Telegram at any time from Settings.',
+  'privacy.yourControl.body': 'You can edit or delete any transaction, and disable notification capture or the weekly report at any time from Settings.',
 
   // Export sheet
   'export.title': 'Export report',

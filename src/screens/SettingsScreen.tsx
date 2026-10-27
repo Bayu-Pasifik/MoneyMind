@@ -9,6 +9,7 @@ import { SettingsRow } from '../components/SettingsRow';
 import { useAnnounce } from '../hooks/useAnnounce';
 import { RootStackParamList } from '../navigation/types';
 import { useNotificationCapture } from '../store/NotificationCaptureContext';
+import { TELEGRAM_ENABLED } from '../config/features';
 import { useTelegram } from '../store/TelegramContext';
 import { useWeeklyReport } from '../store/WeeklyReportContext';
 import { Locale, useLocale } from '../i18n/LocaleContext';
@@ -134,19 +135,23 @@ export function SettingsScreen() {
               />
             }
           />
-          <Divider />
-          <SettingsRow
-            icon="paper-plane-outline"
-            label={t('settings.telegram')}
-            value={telegramConnected ? t('settings.telegramConnected', { username }) : t('settings.telegramNotConnected')}
-            right={
-              <Switch
-                value={telegramConnected}
-                onValueChange={toggleTelegram}
-                trackColor={{ true: colors.telegram }}
+          {TELEGRAM_ENABLED ? (
+            <>
+              <Divider />
+              <SettingsRow
+                icon="paper-plane-outline"
+                label={t('settings.telegram')}
+                value={telegramConnected ? t('settings.telegramConnected', { username }) : t('settings.telegramNotConnected')}
+                right={
+                  <Switch
+                    value={telegramConnected}
+                    onValueChange={toggleTelegram}
+                    trackColor={{ true: colors.telegram }}
+                  />
+                }
               />
-            }
-          />
+            </>
+          ) : null}
           <Divider />
           <SettingsRow
             icon="calendar-outline"

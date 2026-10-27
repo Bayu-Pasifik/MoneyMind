@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TELEGRAM_ENABLED } from '../config/features';
 import { useTheme } from '../theme/ThemeContext';
 import { TranslationKey, useLocale } from '../i18n/LocaleContext';
 
@@ -15,7 +16,7 @@ const SECTIONS: Section[] = [
   { titleKey: 'privacy.notificationCapture.title', bodyKey: 'privacy.notificationCapture.body' },
   { titleKey: 'privacy.billReminders.title', bodyKey: 'privacy.billReminders.body' },
   { titleKey: 'privacy.weeklyReport.title', bodyKey: 'privacy.weeklyReport.body' },
-  { titleKey: 'privacy.telegram.title', bodyKey: 'privacy.telegram.body' },
+  ...(TELEGRAM_ENABLED ? [{ titleKey: 'privacy.telegram.title', bodyKey: 'privacy.telegram.body' } as Section] : []),
   { titleKey: 'privacy.yourControl.title', bodyKey: 'privacy.yourControl.body' },
 ];
 

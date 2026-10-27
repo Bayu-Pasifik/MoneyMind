@@ -186,7 +186,7 @@ export const id: Record<TranslationKey, string> = {
   'privacy.telegram.title': 'Integrasi Telegram',
   'privacy.telegram.body': 'Koneksi Telegram di versi ini adalah demo lokal: tidak ada pesan yang dikirim ke atau diterima dari bot Telegram sungguhan.',
   'privacy.yourControl.title': 'Kendali di tanganmu',
-  'privacy.yourControl.body': 'Kamu bisa mengedit atau menghapus transaksi apa pun, dan mematikan deteksi notifikasi, laporan mingguan, atau Telegram kapan saja dari Pengaturan.',
+  'privacy.yourControl.body': 'Kamu bisa mengedit atau menghapus transaksi apa pun, dan mematikan deteksi notifikasi atau laporan mingguan kapan saja dari Pengaturan.',
 
   // Export sheet
   'export.title': 'Ekspor laporan',

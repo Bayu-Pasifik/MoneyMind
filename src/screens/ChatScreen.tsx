@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useTransactions } from '../store/TransactionsContext';
+import { TELEGRAM_ENABLED } from '../config/features';
 import { useTelegram } from '../store/TelegramContext';
 import { ChatBubble } from '../components/ChatBubble';
 import { TelegramConnectBanner } from '../components/TelegramConnectBanner';
@@ -80,7 +81,7 @@ export function ChatScreen() {
         {t('chat.title')}
       </Text>
 
-      <TelegramConnectBanner />
+      {TELEGRAM_ENABLED ? <TelegramConnectBanner /> : null}
 
       <KeyboardAvoidingView
         style={styles.flexFill}
@@ -93,7 +94,7 @@ export function ChatScreen() {
           renderItem={({ item }) => <ChatBubble text={item.text} role={item.role} />}
         />
 
-        {connected ? (
+        {TELEGRAM_ENABLED && connected ? (
           <View style={[styles.suggestionsRow, { paddingHorizontal: spacing.lg, marginBottom: spacing.xs }]}>
             {SLASH_COMMANDS.map((command) => (
               <Pressable
